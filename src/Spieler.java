@@ -1,8 +1,8 @@
 
-public abstract class Spieler {
+public class Spieler {
 
     private char name;
-        private boolean isComputer;
+    private boolean isComputer;
 
     public Spieler(char name, boolean computer) {
         this.name = name;
