@@ -4,7 +4,7 @@ public class Spielfeld {
     private int columns;
 	private char [][] spielfeld;
 	
-	public Spielfeld () {
+	public Spielfeld (int rows, int columns) {
 		this.spielfeld = new char[rows][columns];
 	}
 

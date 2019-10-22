@@ -2,6 +2,7 @@ public abstract class Spiel {
 
   private Spieler spieler1;
   private Spieler spieler2;
+  private Spieler currentSpieler;
   private Spielfeld spielfeld;
   
   public abstract void spielzug(Spieler spieler1, Spieler spieler2, Spielfeld spielfeld);
@@ -24,6 +25,12 @@ public abstract class Spiel {
 	}
 	public void setSpielfeld(Spielfeld spielfeld) {
 		this.spielfeld = spielfeld;
+	}
+	public Spieler getCurrentSpieler() {
+		return currentSpieler;
+	}
+	public void setCurrentSpieler(Spieler currentSpieler) {
+		this.currentSpieler = currentSpieler;
 	}
    
 
