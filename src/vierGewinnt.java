@@ -1,4 +1,4 @@
 
-public class vierGewinnt {
+public class vierGewinnt extends Spiel implements Protokollierbar {
 
 }
