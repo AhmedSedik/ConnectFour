@@ -15,14 +15,14 @@ public class Spielfeld {
 	}
 
 
-	public static char[][] speilfeldFuellen (char[][] spielfeld, char k) {
+	public  char[][] speilfeldFuellen (char[][] spielfeld, char k) {
 		for (int row = 0; row < spielfeld.length; row++){
 			java.util.Arrays.fill(spielfeld[row], 0, spielfeld[row].length, k);
 			}
 		return spielfeld;
 		
 	}
-    public static void feldDarestellung(char[][] spielfeld){
+    public  void feldDarestellung(char[][] spielfeld){
     	System.out.println();
     		for (int row = 0; row < spielfeld.length; row++){
     			System.out.print("|");
@@ -42,7 +42,11 @@ public class Spielfeld {
 		this.spielfeld = spielfeld;
 	}
 
+	public int getRows() {
+		return rows;
+	}
 
-
-
+	public int getColumns() {
+		return columns;
+	}
 }
