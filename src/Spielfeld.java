@@ -3,10 +3,17 @@ public class Spielfeld {
 	private int rows;
     private int columns;
 	private char [][] spielfeld;
+	//private LinkedList<Character> spielFeld2;
+
 	
 	public Spielfeld (int rows, int columns) {
-		this.spielfeld = new char[rows][columns];
+        this.spielfeld = new char[rows][columns];
+		/*this.spielFeld2 = new LinkedList<>();
+        spielFeld2.add((char) rows);
+        spielFeld2.add((char) columns);*/
+
 	}
+
 
 	public static char[][] speilfeldFuellen (char[][] spielfeld, char k) {
 		for (int row = 0; row < spielfeld.length; row++){
