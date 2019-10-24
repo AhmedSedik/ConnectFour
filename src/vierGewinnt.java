@@ -6,7 +6,7 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 
 
     public static void main(String args[]) {
-        Spieler spieler1;
+        Spieler spieler1,spieler2;
         Scanner scanner = new Scanner(System.in);
         int x ,y;
         x = scanner.nextInt();
@@ -19,11 +19,19 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
         board.speilfeldFuellen(board.getSpielfeld(), '☐');
         board.feldDarestellung(board.getSpielfeld());
 
+        System.out.println("please Select Players");
         Scanner scanner1 = new Scanner(System.in);
         char farbeS1, farbeS2;
         farbeS1 = scanner1.next().charAt(0);
         farbeS2 = scanner1.next().charAt(0);
-        
+
+        spieler1 = new Spieler(farbeS1, false);
+        spieler2 = new Spieler(farbeS2, false);
+
+
+
+
+
 
     }
 
@@ -31,10 +39,12 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
     @Override
     public void add(int lastCol, int lastRow, Spieler currentSpieler) {
 
+
     }
 
     @Override
     public void remove(int lastCol, int lastRow, Spielfeld speilfeld) {
+
 
     }
 
@@ -45,6 +55,7 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 
     @Override
     public void durchgang(Spieler spieler, Spielfeld spielfeld) {
+
 
     }
 }
