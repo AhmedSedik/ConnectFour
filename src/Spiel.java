@@ -1,4 +1,4 @@
-public abstract class Spiel {
+public abstract class Spiel  {
 
 
   private Spieler currentSpieler;

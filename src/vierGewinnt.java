@@ -19,14 +19,14 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
         board.speilfeldFuellen(board.getSpielfeld(), '☐');
         board.feldDarestellung(board.getSpielfeld());
 
-        System.out.println("please Select Players");
+        /*System.out.println("please Select Players");
         Scanner scanner1 = new Scanner(System.in);
         char farbeS1, farbeS2;
         farbeS1 = scanner1.next().charAt(0);
         farbeS2 = scanner1.next().charAt(0);
 
         spieler1 = new Spieler(farbeS1, false);
-        spieler2 = new Spieler(farbeS2, false);
+        spieler2 = new Spieler(farbeS2, false);*/
 
 
 

@@ -8,6 +8,7 @@ public class Spielfeld {
 	
 	public Spielfeld (int rows, int columns) {
         this.spielfeld = new char[rows][columns];
+
 		/*this.spielFeld2 = new LinkedList<>();
         spielFeld2.add((char) rows);
         spielFeld2.add((char) columns);*/
@@ -19,6 +20,7 @@ public class Spielfeld {
 		for (int row = 0; row < spielfeld.length; row++){
 			java.util.Arrays.fill(spielfeld[row], 0, spielfeld[row].length, k);
 			}
+
 		return spielfeld;
 		
 	}
@@ -29,6 +31,7 @@ public class Spielfeld {
     			for (int col = 0; col < spielfeld[row].length; col++){
     				System.out.print(" " + spielfeld[row][col] + " |");
     	}
+
     	System.out.println();
     	}
     }
