@@ -8,6 +8,8 @@ public class Spielfeld {
 	
 	public Spielfeld (int rows, int columns) {
         this.spielfeld = new char[rows][columns];
+        this.rows = rows;
+        this.columns = columns;
 		/*this.spielFeld2 = new LinkedList<>();
         spielFeld2.add((char) rows);
         spielFeld2.add((char) columns);*/

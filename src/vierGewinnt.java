@@ -2,6 +2,7 @@ import java.util.Scanner;
 
 public class vierGewinnt extends Spiel implements Protokollierbar {
 
+	private static Spieler currentSpieler; 
 
 
 
@@ -12,14 +13,15 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
         x = scanner.nextInt();
         y = scanner.nextInt();
         Spielfeld board = new Spielfeld(x,y);
+     
         /*char [][] board = new char[x][y];
-        Spielfeld.speilfeldFuellen(board,'☐');
+        Spielfeld.speilfeldFuellen(board,'â˜�');
         Spielfeld.feldDarestellung(board);
 */
         board.speilfeldFuellen(board.getSpielfeld(), '☐');
         board.feldDarestellung(board.getSpielfeld());
 
-        System.out.println("please Select Players");
+        System.out.println("Farbe Player1, Player2");
         Scanner scanner1 = new Scanner(System.in);
         char farbeS1, farbeS2;
         farbeS1 = scanner1.next().charAt(0);
@@ -27,15 +29,46 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 
         spieler1 = new Spieler(farbeS1, false);
         spieler2 = new Spieler(farbeS2, false);
-
-
-
-
-
+        currentSpieler = spieler1; 
+        
+        System.out.println("Please enter column number");
+        Scanner scanner2 = new Scanner(System.in);
+        int r = scanner.nextInt() - 1;
+        add2oshata(board,r,currentSpieler);
+        board.feldDarestellung(board.getSpielfeld());
+   
+        
+       
+       // while (true) {
+        	
+        	
+        	
+        
 
     }
 
-
+    public static boolean add2oshata (Spielfeld spielfeld, int spalte, Spieler currentSpieler ) {
+    	
+    	if (spielfeld.getSpielfeld()[0][0] != '☐') {
+    		System.out.println("Die Spalte ist voll!");
+    		return false;
+    	}
+    	
+    	for(int reihe = spielfeld.getRows() - 1; reihe >= 0; reihe --) {
+    		
+    		if(spielfeld.getSpielfeld()[reihe][spalte] == '☐') {
+    				spielfeld.getSpielfeld()[reihe][spalte] = currentSpieler.getName();
+    				System.out.println("hi");
+    				return true; 
+    		}
+    	}
+    	return true;
+    }
+    
+    public boolean checkGewinner () {
+    	return true;
+    }
+    
     @Override
     public void add(int lastCol, int lastRow, Spieler currentSpieler) {
 
