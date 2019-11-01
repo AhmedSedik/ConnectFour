@@ -47,7 +47,7 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
     
     }
     
-    public static void spielerWechseln() {
+    private static void spielerWechseln() {
     	if (currentSpieler == spieler1)
     		currentSpieler = spieler2;
     		else 
