@@ -5,8 +5,9 @@ public abstract class Spiel  {
   private Spielfeld spielfeld;
 
   
-  public abstract void spielzug(Spieler spieler, Spielfeld spielfeld);
-  public abstract void durchgang(Spieler spieler, Spielfeld spielfeld);
+  public abstract boolean spielzug(Spielfeld spielfeld, int col, Spieler currentSpieler);
+
+  public abstract void durchgang();
     
 
 	public Spielfeld getSpielfeld() {
