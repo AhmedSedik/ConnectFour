@@ -1,12 +1,14 @@
 import java.util.Scanner;
 
 public class vierGewinnt extends Spiel implements Protokollierbar {
+	//vars
+	private Spieler currentSpieler;
+	private Spieler spieler1;
+	private Spieler spieler2;
+	private Scanner userInput = new Scanner(System.in);
 
-	private static  Spieler currentSpieler;
-	private static  Spieler spieler1;
-	private static  Spieler spieler2;
 
-    private static void spielerWechseln() {
+    private  void spielerWechseln() {
     	if (currentSpieler == spieler1)
     		currentSpieler = spieler2;
     		else 
@@ -21,9 +23,11 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 			return false;
     	}
 
-    	for(int reihe = spielfeld.getRows() - 1; reihe >= 0; reihe --) {    		
-    		if(spielfeld.getSpielfeld()[reihe][col] == '☐') {
-    				spielfeld.getSpielfeld()[reihe][col] = currentSpieler.getName();
+    	for(int row = spielfeld.getRows() - 1; row >= 0; row --) {
+
+
+    		if(spielfeld.getSpielfeld()[row][col] == '☐') {
+    				spielfeld.getSpielfeld()[row][col] = currentSpieler.getFarbe();
     				return true; 
     		}
     	}
@@ -84,34 +88,63 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 
     @Override
     public void durchgang() {
-		Scanner scanner = new Scanner(System.in);
+    	String player1Name, player2Name;
+
+
 		int x ,y;
-		x = scanner.nextInt();
-		y = scanner.nextInt();
+		x = userInput.nextInt();
+		y = userInput.nextInt();
 		Spielfeld board = new Spielfeld(x,y);
+
 
 		board.speilfeldFuellen(board.getSpielfeld(), '☐');
 		board.feldDarestellung(board.getSpielfeld());
 
-		System.out.println("Farbe Player1, Player2");
-		Scanner scanner1 = new Scanner(System.in);
-		char farbeS1, farbeS2;
-		farbeS1 = scanner1.next().charAt(0);
-		farbeS2 = scanner1.next().charAt(0);
+		System.out.println("Player 1 please enter your name:");
 
-		spieler1 = new Spieler(farbeS1, false);
-		spieler2 = new Spieler(farbeS2, false);
+		player1Name = userInput.next();
+		spieler1 = new Spieler(player1Name, false);
+		System.out.println("Player 2 please enter your name:");
+
+		player2Name = userInput.next();
+		spieler2 = new Spieler(player2Name, false);
+
+
+		System.out.println("Farbe Player1, Player2");
+
+		char farbeS1, farbeS2;
+		farbeS1 = userInput.next().charAt(0);
+		farbeS2 = userInput.next().charAt(0);
+
+
+		spieler1.setFarbe(farbeS1);
+		spieler2.setFarbe(farbeS2);
 		currentSpieler = spieler1;
 
 		while (true) {
+			System.out.println("Player "+ currentSpieler.getName() + " turn");
+			System.out.println("Please enter column number between 1 and " + board.getColumns());
 
-			System.out.println("Please enter column number");
-			Scanner scanner2 = new Scanner(System.in);
-			int r = scanner.nextInt() - 1;
-			
-			spielzug(board,r,currentSpieler);
 
-			board.feldDarestellung(board.getSpielfeld());
+			if (!userInput.hasNextInt()) {
+				System.out.println("Wrong, " + currentSpieler.getName() + " please enter a column number between 1 to "+board.getColumns());
+				userInput.next();
+				continue;
+
+
+			}else{
+				int number = userInput.nextInt();
+				if (number > 0 && number <= board.getColumns()) {
+					spielzug(board, number-1,currentSpieler);
+					board.feldDarestellung(board.getSpielfeld());
+				} else {
+					System.out.println("Wrong Entry! ");
+					continue;
+				}
+			}
+
+
+
 			if(checkGewinner(board)) {
 				System.out.println(currentSpieler.getName() + " HAS WON!!");
 				break;

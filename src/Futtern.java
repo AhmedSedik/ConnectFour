@@ -77,7 +77,7 @@ public class Futtern extends Spiel implements Protokollierbar {
             board.feldDarestellung(board.getSpielfeld());
 
             if (board.getSpielfeld()[0][0] == ' ') {
-                System.out.println(currentSpieler.getName() + " has lost!");
+                System.out.println(currentSpieler.getFarbe() + " has lost!");
                 break;
             }
             spielerWechseln();

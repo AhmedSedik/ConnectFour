@@ -15,6 +15,10 @@ public class Spielfeld {
         spielFeld2.add((char) columns);*/
 
 	}
+	//Empty Constructor
+	public Spielfeld() {
+
+	}
 
 
 	public  char[][] speilfeldFuellen (char[][] spielfeld, char k) {
@@ -24,15 +28,28 @@ public class Spielfeld {
 		return spielfeld;
 		
 	}
-    public  void feldDarestellung(char[][] spielfeld){
-    	System.out.println();
-    		for (int row = 0; row < spielfeld.length; row++){
-    			System.out.print("|");
-    			for (int col = 0; col < spielfeld[row].length; col++){
-    				System.out.print(" " + spielfeld[row][col] + " |");
-    	}
-    	System.out.println();
-    	}
+		public  void feldDarestellung(char[][] spielfeld){
+
+		for (int i = 1; i <= spielfeld.length; i++) {
+
+			System.out.print("  "+ i + "* ");
+		}
+
+		System.out.println("");
+
+			for (int row = 0; row < spielfeld.length; row++){
+				System.out.print("|");
+				for (int col = 0; col < spielfeld[row].length; col++){
+
+
+					System.out.print(" " + spielfeld[row][col] + " |");
+					//System.out.print(" " + spielfeld[row][col] + " |");
+
+				}
+				System.out.println("");
+			}
+
+
     }
     	
     
@@ -50,5 +67,13 @@ public class Spielfeld {
 
 	public int getColumns() {
 		return columns;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
+	}
+
+	public void setColumns(int columns) {
+		this.columns = columns;
 	}
 }
