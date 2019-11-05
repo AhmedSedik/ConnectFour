@@ -22,15 +22,14 @@ public class Spielfeld {
     }
 
 
-    public char[][] speilfeldFuellen(char[][] spielfeld, char k) {
+    void speilfeldFuellen(char[][] spielfeld, char k) {
         for (int row = 0; row < spielfeld.length; row++) {
             java.util.Arrays.fill(spielfeld[row], 0, spielfeld[row].length, k);
         }
-        return spielfeld;
 
     }
 
-    public void feldDarestellung(char[][] spielfeld) {
+    void feldDarestellung(char[][] spielfeld) {
         int row, col;
 
 
@@ -58,7 +57,7 @@ public class Spielfeld {
     }
 
 
-    public char[][] getSpielfeld() {
+    char[][] getSpielfeld() {
         return spielfeld;
     }
 
@@ -66,19 +65,19 @@ public class Spielfeld {
         this.spielfeld = spielfeld;
     }
 
-    public int getRows() {
+    int getRows() {
         return rows;
     }
 
-    public int getColumns() {
+    int getColumns() {
         return columns;
     }
 
-    public void setRows(int rows) {
+    void setRows(int rows) {
         this.rows = rows;
     }
 
-    public void setColumns(int columns) {
+    void setColumns(int columns) {
         this.columns = columns;
     }
 }

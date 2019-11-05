@@ -1,43 +1,44 @@
 import java.util.Scanner;
 
-public class vierGewinnt extends Spiel implements Protokollierbar {
+public class VierGewinnt extends Spiel implements Protokollierbar {
 	//vars
 	private Spieler currentSpieler;
 	private Spieler spieler1;
 	private Spieler spieler2;
 	private Scanner userInput = new Scanner(System.in);
 
-	private int totalMoves =0;
 
 
-    private  void spielerWechseln() {
-    	if (currentSpieler == spieler1)
-    		currentSpieler = spieler2;
-    		else 
-    			currentSpieler = spieler1;
 
-    }
+
 
     @Override
-    public boolean spielzug (Spielfeld spielfeld, int col, Spieler currentSpieler ) {
-    	if (spielfeld.getSpielfeld()[0][col] != '☐') {
-    		System.out.println("Die Spalte ist voll!");
+    public boolean spielzug (Spielfeld spielfeld, int row,int col, Spieler currentSpieler ) {
+
+
+    	if (spielfeld.getSpielfeld()[0][col] != '☐' ) {
+    		System.out.println("Stack is full!");
     		spielerWechseln();
-			return false;
-    	}
 
-    	for(int row = spielfeld.getRows() - 1; row >= 0; row --) {
+		}
 
 
-    		if(spielfeld.getSpielfeld()[row][col] == '☐') {
-    				spielfeld.getSpielfeld()[row][col] = currentSpieler.getFarbe();
+
+
+    	for(int row1 = spielfeld.getRows() - 1; row1 >= 0; row1 --) {
+
+
+    		if(spielfeld.getSpielfeld()[row1][col] == '☐') {
+    				spielfeld.getSpielfeld()[row1][col] = currentSpieler.getFarbe();
     				return true; 
     		}
-    	}
+
+
+		}
     	return true;
     }
 
-    public static boolean checkGewinner (Spielfeld spielfeld) {
+    private  boolean checkGewinner(Spielfeld spielfeld) {
     	
     	//horizontal
     	for (int row = 0; row < spielfeld.getSpielfeld().length; row++){
@@ -80,17 +81,14 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
     	}
     	return false;
     }
-    //Ignore now
-	private void checkDraw(char [][] spielfeld) {
-		for (int i = 0; i < spielfeld.length; i++) {
-			if (spielfeld[i][i] == 'R' && spielfeld[i][i] == 'G') {
-				System.out.println("Draw");
-				System.out.println("Game Over!");
-			}
+
+	private void checkDraw(Spielfeld board) {
+		for (int i = 0; i < board.getColumns(); i++) {
+			if (board.getSpielfeld()[0][i] == '☐')
+				return;
 		}
-
-			System.exit(0);
-
+		System.out.println("Draw!!!");
+		System.exit(0);
 	}
 
     @Override
@@ -142,7 +140,7 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 
 		while (true) {
 			System.out.println("Player "+ currentSpieler.getName() + " turn");
-			totalMoves = totalMoves+1;
+
 			System.out.println("Please enter column number between 1 and " + board.getColumns());
 
 
@@ -155,7 +153,7 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 				int number = userInput.nextInt();
 				if (number > 0 && number <= board.getColumns()) {
 						//try catch
-						spielzug(board, number - 1, currentSpieler);
+						spielzug(board, 0,number - 1, currentSpieler);
 						board.feldDarestellung(board.getSpielfeld());
 
 				} else {
@@ -168,8 +166,15 @@ public class vierGewinnt extends Spiel implements Protokollierbar {
 				System.out.println(currentSpieler.getName() + " HAS WON!!");
 				break;
 			}
-			
+			checkDraw(board);
 			spielerWechseln();
 		}
+    }
+    private  void spielerWechseln() {
+        if (currentSpieler == spieler1)
+            currentSpieler = spieler2;
+        else
+            currentSpieler = spieler1;
+
     }
 }
