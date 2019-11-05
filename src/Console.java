@@ -11,18 +11,36 @@ public class Console {
                 "The pieces fall\nstraight down, occupying the next available space within the column.\nThe objective of the game is to connect four of one's own discs of\nthe same color next to each other vertically, horizontally, or\ndiagonally before your opponent.\n"); //Intro text.
 
 */
-        System.out.println("Welcome. Please Select Game:\n");
-        System.out.println("1.Vier-Gewinnt\n2.Chomp");
-        Scanner x = new Scanner(System.in);
-        int selection = x.nextInt();
-        if (selection == 1) {
-            VierGewinnt game1 = new VierGewinnt();
-            game1.durchgang();
+       boolean isValid = false;
 
-        } else {
-            Futtern game2 = new Futtern();
-            game2.durchgang();
+        while (!isValid) {
+            int selection =0;
+            System.out.println("Welcome. Please Select a Game to play:\n");
+            System.out.println("1.Vier-Gewinnt\n2.Chomp");
+            Scanner x = new Scanner(System.in);
+            try {
+                 selection= x.nextInt();
+            } catch (Exception e) {
+                x.next();
+
+            }
+
+            if (selection == 1) {
+                isValid = true;
+                VierGewinnt game1 = new VierGewinnt();
+                game1.durchgang();
+
+            } else if (selection == 2) {
+                isValid = true;
+                Futtern game2 = new Futtern();
+                game2.durchgang();
+            } else {
+                System.out.println("Wrong Entry! \n\n");
+                isValid = false;
+
+            }
         }
+
 
 
 

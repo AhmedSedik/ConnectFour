@@ -22,8 +22,6 @@ public abstract class Spiel  {
 	public void setCurrentSpieler(Spieler currentSpieler) {
 		this.currentSpieler = currentSpieler;
 	}
-   
-
 
 
 }

@@ -8,26 +8,21 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
 	private Scanner userInput = new Scanner(System.in);
 
 
-
-
-
-
+	/*
+	@Param spielfeld instance from the board to access coordinates and methods
+	@Param row, col coordinates
+	 */
     @Override
     public boolean spielzug (Spielfeld spielfeld, int row,int col, Spieler currentSpieler ) {
 
-
+        //checking of the @col ist full
     	if (spielfeld.getSpielfeld()[0][col] != '☐' ) {
     		System.out.println("Stack is full!");
     		spielerWechseln();
 
 		}
-
-
-
-
+        //making the move dh. assigning the color of the players on the board
     	for(int row1 = spielfeld.getRows() - 1; row1 >= 0; row1 --) {
-
-
     		if(spielfeld.getSpielfeld()[row1][col] == '☐') {
     				spielfeld.getSpielfeld()[row1][col] = currentSpieler.getFarbe();
     				return true; 
@@ -81,7 +76,9 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
     	}
     	return false;
     }
-
+    /*
+    checking if the board is full and no one has won
+     */
 	private void checkDraw(Spielfeld board) {
 		for (int i = 0; i < board.getColumns(); i++) {
 			if (board.getSpielfeld()[0][i] == '☐')
@@ -98,9 +95,14 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
     public void remove(int lastCol, int lastRow, Spielfeld speilfeld) {
     }
 
-
+    /*
+    taking all required data from User
+    @Param x,y size of the board
+    @Param player1Name, player2Name
+    @Param farbeS1, farbeS2  colors of each player's discs
+     */
     @Override
-    public void durchgang() {
+    public void durchgang() throws IndexOutOfBoundsException {
     	String player1Name, player2Name;
 
 		//getting board coordinates from user
@@ -115,9 +117,8 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
 
 		board.speilfeldFuellen(board.getSpielfeld(), '☐');
 		board.feldDarestellung(board.getSpielfeld());
-
+        //Taking players names and setting them
 		System.out.println("Player 1 please enter your name:");
-
 		player1Name = userInput.next();
 		spieler1 = new Spieler(player1Name, false);
 		System.out.println("Player 2 please enter your name:");
@@ -133,7 +134,7 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
 		System.out.println("Player2 color (R for Red, Y for yellow)");
 		farbeS2 = userInput.next().charAt(0);
 		farbeS2 = Character.toUpperCase(farbeS2);
-
+        //setting the color corresponding to each player
 		spieler1.setFarbe(farbeS1);
 		spieler2.setFarbe(farbeS2);
 		currentSpieler = spieler1;
@@ -153,8 +154,10 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
 				int number = userInput.nextInt();
 				if (number > 0 && number <= board.getColumns()) {
 						//try catch
+
 						spielzug(board, 0,number - 1, currentSpieler);
 						board.feldDarestellung(board.getSpielfeld());
+
 
 				} else {
 					System.out.println("Wrong Entry! ");

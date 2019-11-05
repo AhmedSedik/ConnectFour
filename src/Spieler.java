@@ -5,15 +5,13 @@ public class Spieler {
     private boolean isComputer;
 
 
-    public Spieler(char name, boolean computer) {
-        this.farbe = name;
-        this.isComputer = computer;
-    }
 
-    public Spieler(String name, boolean isComputer) {
+
+    Spieler(String name, boolean isComputer) {
         this.name = name;
         this.isComputer = isComputer;
     }
+    //default Constructor
     Spieler() {
 
     }
