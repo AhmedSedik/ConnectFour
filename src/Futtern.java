@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.Stack;
 
 public class Futtern extends Spiel implements Protokollierbar {
     //vars
@@ -7,6 +8,7 @@ public class Futtern extends Spiel implements Protokollierbar {
     private static Spieler spieler2;
     private Scanner userInput = new Scanner(System.in);
 
+    Stack stack = new Stack();
 
 
     private static void spielerWechseln() {
@@ -20,13 +22,17 @@ public class Futtern extends Spiel implements Protokollierbar {
 
 
     @Override
-    public void add(int lastCol, int lastRow, Spieler currentSpieler) {
-
+    public void add(int col, int row, Spieler currentSpieler) {
+        stack.push(currentSpieler.getName());
+        stack.push(col);
+        stack.push(row);
     }
 
     @Override
-    public void remove(int lastCol, int lastRow, Spielfeld speilfeld) {
-
+    public void remove(Stack stack) {
+        stack.pop();
+        stack.pop();
+        stack.pop();
     }
 
 
@@ -101,6 +107,7 @@ public class Futtern extends Spiel implements Protokollierbar {
                 if (col >= 0 && col <= board.getColumns()-1 && row>=0 && row<=board.getRows()-1 ) {
                     //try catch
                     spielzug(board,row,col,currentSpieler);
+                    add(row, col, currentSpieler);
                     board.feldDarestellung(board.getSpielfeld());
 
 

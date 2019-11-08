@@ -1,11 +1,15 @@
 import java.util.Scanner;
+import java.util.Stack;
 
-public class VierGewinnt extends Spiel implements Protokollierbar {
+public class VierGewinnt  extends Spiel implements Protokollierbar {
     //vars
     private Spieler currentSpieler;
     private Spieler spieler1;
     private Spieler spieler2;
     private Scanner userInput = new Scanner(System.in);
+
+    private Stack stack = new Stack();
+    private int lastRow;
 
 
     /*
@@ -26,6 +30,7 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
         for (int row1 = spielfeld.getRows() - 1; row1 >= 0; row1--) {
             if (spielfeld.getSpielfeld()[row1][col] == '☐') {
                 spielfeld.getSpielfeld()[row1][col] = currentSpieler.getFarbe();
+                lastRow  = row1;
                 return true;
             }
 
@@ -90,11 +95,20 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
     }
 
     @Override
-    public void add(int lastCol, int lastRow, Spieler currentSpieler) {
+    public void add(int col, int lastRow, Spieler currentSpieler) {
+
+        stack.push(currentSpieler.getName());
+        stack.push(col);
+        stack.push(lastRow);
+
+
     }
 
     @Override
-    public void remove(int lastCol, int lastRow, Spielfeld speilfeld) {
+    public void remove(Stack stack) {
+        stack.pop();
+        stack.pop();
+        stack.pop();
     }
 
     /*
@@ -158,6 +172,7 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
                 //Handling if user entered number out of the Matrix
                 try {
                     spielzug(board, 0, number - 1, currentSpieler);
+                    add(number-1,lastRow, currentSpieler);
                     board.feldDarestellung(board.getSpielfeld());
                 } catch (IndexOutOfBoundsException e) {
                     System.out.println("Wrong Entry! ");
@@ -167,6 +182,11 @@ public class VierGewinnt extends Spiel implements Protokollierbar {
 
             if (checkGewinner(board)) {
                 System.out.println(currentSpieler.getName() + " HAS WON!!");
+                while (!stack.empty()) {
+                    System.out.println(stack.pop());
+
+                }
+
                 break;
             }
             checkDraw(board);

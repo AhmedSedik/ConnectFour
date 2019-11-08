@@ -1,9 +1,12 @@
+import java.util.Stack;
+
 public interface Protokollierbar {
 	 
-	static int lastCol = -1;
-	static int lastRow = -1;
+	static int col = 0;
+	static int row = 0;
+
 	
-	public void add(int lastCol, int lastRow, Spieler currentSpieler);
-	
-	public void remove(int lastCol, int lastRow, Spielfeld speilfeld);
+	public void add(int col, int row, Spieler currentSpieler);
+
+	public void remove(Stack stack);
 }
