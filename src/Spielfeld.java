@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Spielfeld {
 
     private int rows;
@@ -23,8 +25,12 @@ public class Spielfeld {
 
 
     void speilfeldFuellen(char[][] spielfeld, char k) {
-        for (int row = 0; row < spielfeld.length; row++) {
+        /*for (int row = 0; row < spielfeld.length; row++) {
             java.util.Arrays.fill(spielfeld[row], 0, spielfeld[row].length, k);
+        }
+*/
+        for (char[] chars : spielfeld) {
+            Arrays.fill(chars, 0, chars.length, k);
         }
 
     }

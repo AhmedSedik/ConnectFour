@@ -5,7 +5,9 @@ public class Futtern extends Spiel implements Protokollierbar {
     private static Spieler currentSpieler;
     private static Spieler spieler1;
     private static Spieler spieler2;
-    Scanner userInput = new Scanner(System.in);
+    private Scanner userInput = new Scanner(System.in);
+
+
 
     private static void spielerWechseln() {
         if (currentSpieler == spieler1)
@@ -30,6 +32,13 @@ public class Futtern extends Spiel implements Protokollierbar {
 
     @Override
     public boolean spielzug(Spielfeld spielfeld, int row,int col, Spieler currentSpieler) {
+
+
+        if (spielfeld.getSpielfeld()[row][col] != '☐') {
+            System.out.println("Stack is full!");
+            spielerWechseln();
+
+        }
         for (int row1 = row; row1 < spielfeld.getSpielfeld().length; row1++){
             for (int col1=col; col1 < spielfeld.getSpielfeld()[row].length; col1++){
 
@@ -87,11 +96,11 @@ public class Futtern extends Spiel implements Protokollierbar {
                 continue;
 
             }else{
-                int r = userInput.nextInt() - 1;
-                int c = userInput.nextInt() - 1;
-                if (c >= 0 && c <= board.getColumns()-1 && r>=0 && r<=board.getRows()-1 ) {
+                int row = userInput.nextInt() - 1;
+                int col = userInput.nextInt() - 1;
+                if (col >= 0 && col <= board.getColumns()-1 && row>=0 && row<=board.getRows()-1 ) {
                     //try catch
-                    spielzug(board,r,c,currentSpieler);
+                    spielzug(board,row,col,currentSpieler);
                     board.feldDarestellung(board.getSpielfeld());
 
 
@@ -112,14 +121,5 @@ public class Futtern extends Spiel implements Protokollierbar {
 
 
     }
-    //want to check if the the place alrealy played
-    private boolean checkAlreadyMove(Spielfeld board) {
-        for (int i = 0; i < board.getColumns(); i++) {
-            if (board.getSpielfeld()[0][i] == '☐')
-                return false;
-        }
-        System.out.println("Draw!!!");
-        System.exit(0);
-        return true;
-    }
+
 }
