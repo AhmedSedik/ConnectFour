@@ -1,3 +1,4 @@
+package spielLogik;
 public abstract class Spiel  {
 
 

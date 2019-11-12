@@ -1,3 +1,4 @@
+package spielLogik;
 import java.util.Scanner;
 
 public class Console {

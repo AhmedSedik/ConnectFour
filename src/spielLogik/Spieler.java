@@ -1,3 +1,4 @@
+package spielLogik;
 public class Spieler {
 
     private char farbe;

@@ -1,3 +1,4 @@
+package spielLogik;
 import java.util.Stack;
 
 public interface Protokollierbar {
