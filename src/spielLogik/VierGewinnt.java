@@ -183,11 +183,6 @@ public class VierGewinnt  extends Spiel implements Protokollierbar {
 
             if (checkGewinner(board)) {
                 System.out.println(currentSpieler.getName() + " HAS WON!!");
-                while (!stack.empty()) {
-                    System.out.println(stack.pop());
-
-                }
-
                 break;
             }
             checkDraw(board);
