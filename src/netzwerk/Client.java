@@ -1,25 +1,30 @@
 package netzwerk;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
+
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.err.println("Pass the server IP as the sole command line argument");
-            return;
-        }
-        try (Socket socket = new Socket(args[0], 51719)) {
-            System.out.println("Enter lines of text then Ctrl+D or Ctrl+C to quit");
-            Scanner scanner = new Scanner(System.in);
-            Scanner in = new Scanner(socket.getInputStream());
-            var out = new PrintWriter(socket.getOutputStream(), true);
-            while (scanner.hasNextLine()) {
-                out.println(scanner.nextLine());
-                System.out.println(in.nextLine());
+
+        try (Socket socket = new Socket("127.0.0.1", 51730);){
+            System.out.println("Welcome to the game server!");
+            System.out.println("Please enter your Username");
+
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // send data through the socket to the server, the Client needs to write to the PrintWriter
+
+            BufferedReader in = new BufferedReader(
+                                new InputStreamReader(socket.getInputStream()));
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
+
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                out.println(userInput);
+                System.out.println("echo: " + in.readLine());
             }
         }
+
     }
 }
+
