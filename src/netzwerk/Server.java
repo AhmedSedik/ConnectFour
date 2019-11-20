@@ -40,7 +40,7 @@ public class Server {
 					out.println(inputLine);
 
 			} catch (IOException e) {
-				System.out.println("Exception caught when trying to listen on port "
+				System.out.println("Exception caught when trying to listen on port " + socket
 						+  " or listening for a connection");
 				System.out.println(e.getMessage());
 			}
