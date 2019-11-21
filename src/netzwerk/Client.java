@@ -19,9 +19,12 @@ public class Client {
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
 
             String username;
-            while ((username = stdIn.readLine()) != null) {
+            String password;
+            while ((username = stdIn.readLine())  != null
+                    && (password = stdIn.readLine()) != null) {
                 out.println(username);
-                System.out.println("echo: " + in.readLine());
+                out.println(password);
+
             }
         }
 
