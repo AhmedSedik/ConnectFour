@@ -16,19 +16,22 @@ public class Client {
             BufferedReader in = new BufferedReader(
                                 new InputStreamReader(socket.getInputStream()));
 
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
+            BufferedReader userIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
 
             String username;
             String password;
-            while ((username = stdIn.readLine())  != null
-                    && (password = stdIn.readLine()) != null) {
+            String message = null;
+            while ((username = userIn.readLine())  != null
+                    && (password = userIn.readLine()) != null) {
                 out.println(username);
                 out.println(password);
+                System.out.println(in.readLine());
+                }
 
             }
         }
 
     }
 
-}
+
 

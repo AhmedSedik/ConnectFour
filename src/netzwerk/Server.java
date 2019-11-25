@@ -2,11 +2,13 @@ package netzwerk;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.*;
 import java.net.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
@@ -32,40 +34,58 @@ public class Server {
         private Socket socket;
         private String[] listOfUsers;
         private HashSet<String> h;
+        private List<String[]> records;
 
-        Handler(Socket socket) {
+
+        Handler(Socket socket) throws FileNotFoundException {
             this.socket = socket;
             this.h = new HashSet<String>();
+
         }
 
         @Override
         public void run() {
-			System.out.println("Connected: " + socket);
-			try (
+            System.out.println("Connected: " + socket);
+            try (
                     PrintWriter out =
                             new PrintWriter(socket.getOutputStream(), true);
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(socket.getInputStream()));
 
                     // create CSVWriter object filewriter object as parameter
-                    CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(),true));
+                    CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
                     CSVReader reader = new CSVReader(new FileReader(users));
-
             ) {
                 String readUsername;
                 String readPassword;
+                String message;
+                boolean userExists = false;
 
-                while (((readUsername = in.readLine()) != null) &&
-                        ((readPassword = in.readLine()) != null)) {
+                while (!userExists) {
 
-                        reader.readNext().equals(readUsername);
-                        String[] data = {readUsername, readPassword};
-                        writer.writeNext(data);
-                        writer.close();
+                    while (((readUsername = in.readLine()) != null) &&
+                            ((readPassword = in.readLine()) != null)) {
+                        String[] nextRecord;
 
-					/*setCredentials(readUsername, readPassword);
-					System.out.println("Credentials saved to preferences")*/;
-				}
+                        while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
+
+                            if (nextRecord[0].equals(readUsername)) {
+                                System.out.println("a client entered a already taken username");
+                                out.println("Username Already Taken");
+                                userExists = true;
+                            }
+                        }
+
+                        if (userExists == false) {
+                            System.out.println("Username accepted");
+                            String[] data = {readUsername, readPassword};
+                            writer.writeNext(data);
+                            writer.close();
+                            userExists = false;
+                        }
+                    }
+
+                }
             } catch (IOException | CsvValidationException e) {
                 System.out.println("Exception caught when trying to listen on port " + socket
                         + " or listening for a connection");
@@ -74,25 +94,6 @@ public class Server {
 
 
         }
-		/*Preferences preferences = Preferences.userRoot().node("accounts/userData");
-
-
-		public void setCredentials(String username, String password) {
-			preferences.put("db_username", username);
-			preferences.put("db_password", password);
-		}
-
-		public String getUsername() {
-			return preferences.get("db_username", null);
-		}
-
-		public String getPassword() {
-			return preferences.get("db_password", null);
-		}*/
-
-
     }
 }
-		
-
 
