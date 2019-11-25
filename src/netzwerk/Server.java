@@ -56,36 +56,30 @@ public class Server {
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
                     CSVReader reader = new CSVReader(new FileReader(users));
             ) {
-                String readUsername;
-                String readPassword;
+                String readUsername = null;
+                String readPassword = null;
                 String message;
                 boolean userExists = false;
-
-                while (!userExists) {
+                while (userExists = true) {
 
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
                         String[] nextRecord;
+                        userExists = false;
 
-                        while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
-
+                        while ((((nextRecord = reader.readNext())) != null) && !userExists) {
                             if (nextRecord[0].equals(readUsername)) {
                                 System.out.println("a client entered a already taken username");
                                 out.println("Username Already Taken");
                                 userExists = true;
                             }
                         }
-
-                        if (userExists == false) {
-                            System.out.println("Username accepted");
-                            String[] data = {readUsername, readPassword};
-                            writer.writeNext(data);
-                            writer.close();
-                            userExists = false;
-                        }
                     }
-
                 }
+                System.out.println("Username accepted");
+                String[] data = {readUsername, readPassword};
+                writer.writeNext(data);
+                writer.close();
             } catch (IOException | CsvValidationException e) {
                 System.out.println("Exception caught when trying to listen on port " + socket
                         + " or listening for a connection");
