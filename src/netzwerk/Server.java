@@ -64,22 +64,28 @@ public class Server {
 
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
+                        System.gc();
                         String[] nextRecord;
                         userExists = false;
 
-                        while ((((nextRecord = reader.readNext())) != null) && !userExists) {
+
+                        while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
                             if (nextRecord[0].equals(readUsername)) {
                                 System.out.println("a client entered a already taken username");
                                 out.println("Username Already Taken");
                                 userExists = true;
+https://stackoverflow.com/questions/11102114/how-to-clear-a-string
                             }
                         }
+                        if (userExists == false) {
                             System.out.println("Username accepted");
                             String[] data = {readUsername, readPassword};
                             writer.writeNext(data);
-                            writer.close();
+                            writer.flush();
+                            userExists = true;
+                            break;
+                        }
                     }
-
                 }
             } catch (IOException | CsvValidationException e) {
                 System.out.println("Exception caught when trying to listen on port " + socket
