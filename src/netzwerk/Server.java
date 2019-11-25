@@ -56,11 +56,11 @@ public class Server {
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
                     CSVReader reader = new CSVReader(new FileReader(users));
             ) {
-                String readUsername = null;
-                String readPassword = null;
+                String readUsername;
+                String readPassword;
                 String message;
                 boolean userExists = false;
-                while (userExists = true) {
+                while (!userExists){
 
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
@@ -74,12 +74,13 @@ public class Server {
                                 userExists = true;
                             }
                         }
+                            System.out.println("Username accepted");
+                            String[] data = {readUsername, readPassword};
+                            writer.writeNext(data);
+                            writer.close();
                     }
+
                 }
-                System.out.println("Username accepted");
-                String[] data = {readUsername, readPassword};
-                writer.writeNext(data);
-                writer.close();
             } catch (IOException | CsvValidationException e) {
                 System.out.println("Exception caught when trying to listen on port " + socket
                         + " or listening for a connection");
