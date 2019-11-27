@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.prefs.Preferences;
 
 public class Server {
 
@@ -37,63 +36,88 @@ public class Server {
         private List<String[]> records;
 
 
-        Handler(Socket socket) throws FileNotFoundException {
+        Handler(Socket socket) throws IOException {
             this.socket = socket;
-            this.h = new HashSet<String>();
-
         }
 
         @Override
         public void run() {
             System.out.println("Connected: " + socket);
+            try {
+                registerUser();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //continue run logic
+
+        }
+
+        public void registerUser() throws IOException {
             try (
-                    PrintWriter out =
-                            new PrintWriter(socket.getOutputStream(), true);
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(socket.getInputStream()));
-
                     // create CSVWriter object filewriter object as parameter
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
-                    CSVReader reader = new CSVReader(new FileReader(users));
+
             ) {
                 String readUsername;
                 String readPassword;
-                String message;
-                boolean userExists = false;
-                while (!userExists){
+                String userChoice = in.readLine();
+                if (userChoice.equals("/register")) {
+                    boolean userExists = false;
+                    while (!userExists) {
 
+                        while (((readUsername = in.readLine()) != null) &&
+                                ((readPassword = in.readLine()) != null)) {
+
+                            String[] nextRecord;
+                            userExists = false;
+                            CSVReader reader = new CSVReader(new FileReader(users));
+                            while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
+                                if (nextRecord[0].equals(readUsername)) {
+                                    System.out.println("a client entered an already taken username");
+                                    out.println("Username Already Taken");
+                                    userExists = true;
+                                }
+                            }
+                            if (userExists == false) {
+                                System.out.println("-----REGISTRATION SUCCESSFUL----");
+                                String[] data = {readUsername, readPassword};
+                                writer.writeNext(data);
+                                writer.flush();
+                                userExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {
+                    boolean loginCheck = false;
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
                         System.gc();
                         String[] nextRecord;
-                        userExists = false;
+                        CSVReader reader = new CSVReader(new FileReader(users));
 
-
-                        while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
+                        while ((((nextRecord = reader.readNext())) != null) && loginCheck == false) {
                             if (nextRecord[0].equals(readUsername)) {
-                                System.out.println("a client entered a already taken username");
-                                out.println("Username Already Taken");
-                                userExists = true;
-https://stackoverflow.com/questions/11102114/how-to-clear-a-string
+                                if (nextRecord[1].equals(readPassword))
+                                    loginCheck = true;
                             }
                         }
-                        if (userExists == false) {
-                            System.out.println("Username accepted");
-                            String[] data = {readUsername, readPassword};
-                            writer.writeNext(data);
-                            writer.flush();
-                            userExists = true;
+                        if (loginCheck == true) {
+                            System.out.println("Client: "+socket +" logged in with username " +readUsername);
                             break;
                         }
+                        else
+                            out.println("Login failed. Please try again.");
                     }
                 }
-            } catch (IOException | CsvValidationException e) {
-                System.out.println("Exception caught when trying to listen on port " + socket
-                        + " or listening for a connection");
-                System.out.println(e.getMessage());
+            } catch (
+                    CsvValidationException e) {
+                e.printStackTrace();
             }
-
-
         }
     }
 }
