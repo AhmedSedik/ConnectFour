@@ -9,10 +9,14 @@ import java.io.*;
 import java.net.*;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
+
+    private static Set<String> names = new HashSet<>();
+    private static Set<PrintWriter> writers = new HashSet<>();
 
     public static File users;
 
@@ -82,8 +86,10 @@ public class Server {
                                 }
                             }
                             if (userExists == false) {
-                                System.out.println("-----REGISTRATION SUCCESSFUL----");
+
                                 String[] data = {readUsername, readPassword};
+                                System.out.println("-----REGISTRATION SUCCESSFUL----");
+                                out.println("-----REGISTRATION SUCCESSFUL----");
                                 writer.writeNext(data);
                                 writer.flush();
                                 userExists = true;
@@ -96,7 +102,7 @@ public class Server {
                     boolean loginCheck = false;
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
-                        System.gc();
+                        //System.gc();
                         String[] nextRecord;
                         CSVReader reader = new CSVReader(new FileReader(users));
 
@@ -107,12 +113,20 @@ public class Server {
                             }
                         }
                         if (loginCheck == true) {
+                            out.println(readUsername + " Login Accepted!!");
+                            writers.add(out);
+                            for (PrintWriter printWriter : writers) {
+                                printWriter.println(readUsername + " has joined");
+                            }
+
                             System.out.println("Client: "+socket +" logged in with username " +readUsername);
-                            break;
+
                         }
                         else
                             out.println("Login failed. Please try again.");
                     }
+
+
                 }
             } catch (
                     CsvValidationException e) {
