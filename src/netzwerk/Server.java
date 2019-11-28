@@ -110,7 +110,7 @@ public class Server {
                             if (userExists == false) {
 
                                 String[] data = {readUsername, readPassword};
-                                System.out.println("-----REGISTRATION SUCCESSFUL----");
+                                System.out.println("----REGISTRATION SUCCESSFUL---");
                                 out.println("-----REGISTRATION SUCCESSFUL----");
                                 username = readUsername;
                                 writer.writeNext(data);
