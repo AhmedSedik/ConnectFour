@@ -58,23 +58,21 @@ public class Server {
             System.out.println("Connected: " + socket);
             try {
                 registerUser();
-                System.out.println(socket + "has joined the chat");
                 chat();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //continue run logic
-
         }
 
-        private void chat() throws IOException {
+        public void chat() throws IOException {
+            System.out.println(socket + "has joined the chat");
 
                 // Accept messages from this client and broadcast them.
                 while (true) {
                     String input = in.readLine();
-                    if (input.toLowerCase().startsWith("/quit")) {
+                    /*if (input.toLowerCase().startsWith("/quit")) {
                         return;
-                    }
+                    }*/
                     for (PrintWriter writer : writers) {
                         writer.println("MESSAGE " + username + ": " + input);
                         writer.flush();
@@ -116,7 +114,7 @@ public class Server {
                                 username = readUsername;
                                 writer.writeNext(data);
                                 userExists = true;
-                                //break;
+                                break;
                             }
                         }
                     }
