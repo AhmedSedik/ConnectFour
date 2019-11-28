@@ -20,40 +20,34 @@ public class Client {
                     "\n");
             System.out.println("1. Register " + "\n" + "2. Login");
 
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // send data through the socket to the server, the Client needs to write to the PrintWriter
-
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
-
             BufferedReader userIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
 
-            String username;
-            String password;
+            String username; String password;
             String userChoice = userIn.readLine();
             out.println(userChoice);
             String login;
+
             while ((username = userIn.readLine()) != null
                     && (password = userIn.readLine()) != null) {
                 out.println(username);
                 out.println(password);
                 login = in.readLine();
+//
                 if (login.equals("true")) {
                     System.out.println(in.readLine());
                     System.out.println(in.readLine());
                     break;
                 }
             }
-            boolean exit = false;
-            while (!exit) {
+            while (true) {
                 String message = userIn.readLine();
                 out.println(message);
                 System.out.println(in.readLine());
             }
-
-
         }
-
-
     }
 }
 
