@@ -38,6 +38,7 @@ public class Server {
         private String[] listOfUsers;
         private HashSet<String> h;
         private List<String[]> records;
+        private String username;
 
 
         Handler(Socket socket) throws IOException {
@@ -49,10 +50,34 @@ public class Server {
             System.out.println("Connected: " + socket);
             try {
                 registerUser();
+                chat();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             //continue run logic
+
+        }
+
+        private void chat() {
+            try {
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream()));
+
+
+                // Accept messages from this client and broadcast them.
+                while (true) {
+                    String input = in.readLine();
+                    if (input.toLowerCase().startsWith("/quit")) {
+                        return;
+                    }
+                    for (PrintWriter writer : writers) {
+                        writer.println("MESSAGE " + username + ": " + input);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
 
@@ -90,10 +115,11 @@ public class Server {
                                 String[] data = {readUsername, readPassword};
                                 System.out.println("-----REGISTRATION SUCCESSFUL----");
                                 out.println("-----REGISTRATION SUCCESSFUL----");
+                                username = readUsername;
                                 writer.writeNext(data);
                                 writer.flush();
                                 userExists = true;
-                                break;
+                                //break;
                             }
                         }
                     }
@@ -114,9 +140,18 @@ public class Server {
                         }
                         if (loginCheck == true) {
                             out.println(readUsername + " Login Accepted!!");
+                            username = readUsername;
                             writers.add(out);
                             for (PrintWriter printWriter : writers) {
                                 printWriter.println(readUsername + " has joined");
+                            }
+                            //names
+                            synchronized (names) {
+                                if (!readUsername.isBlank() && !names.contains(readUsername)) {
+                                    names.add(readUsername);
+                                    System.out.println(names);
+
+                                }
                             }
 
                             System.out.println("Client: "+socket +" logged in with username " +readUsername);
@@ -125,14 +160,21 @@ public class Server {
                         else
                             out.println("Login failed. Please try again.");
                     }
-
-
                 }
+
             } catch (
                     CsvValidationException e) {
                 e.printStackTrace();
+            }finally {
+                try {
+                    socket.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
     }
 }
 
