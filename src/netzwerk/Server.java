@@ -17,7 +17,7 @@ public class Server {
 
     private static Set<String> names = new HashSet<>();
     private static Set<PrintWriter> writers = new HashSet<>();
-
+    private static PrintWriter out; private static BufferedReader in;
     public static File users;
 
     public static void main(String[] args) throws Exception {
@@ -27,7 +27,7 @@ public class Server {
             users = new File("users.csv");
             ExecutorService pool = Executors.newFixedThreadPool(10);
             while (true) {
-                pool.execute(new Handler(listener.accept()));
+                pool.execute(new Handler(listener.accept(), out,in));
             }
         }
 
@@ -39,17 +39,26 @@ public class Server {
         private HashSet<String> h;
         private List<String[]> records;
         private String username;
+        private PrintWriter out;
+        private BufferedReader in;
 
-
-        Handler(Socket socket) throws IOException {
+        public Handler(Socket socket, PrintWriter out, BufferedReader in) throws IOException {
             this.socket = socket;
+            this.out = new PrintWriter(socket.getOutputStream(), true);
+            this.in = new BufferedReader(
+                          new InputStreamReader(socket.getInputStream()));
         }
+
+        /*Handler(Socket socket) throws IOException {
+            this.socket = socket;
+        }*/
 
         @Override
         public void run() {
             System.out.println("Connected: " + socket);
             try {
                 registerUser();
+                System.out.println(socket + "has joined the chat");
                 chat();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -58,12 +67,7 @@ public class Server {
 
         }
 
-        private void chat() {
-            try {
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()));
-
+        private void chat() throws IOException {
 
                 // Accept messages from this client and broadcast them.
                 while (true) {
@@ -75,17 +79,10 @@ public class Server {
                         writer.println("MESSAGE " + username + ": " + input);
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
         }
 
         public void registerUser() throws IOException {
             try (
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(socket.getInputStream()));
                     // create CSVWriter object filewriter object as parameter
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
 
@@ -123,8 +120,7 @@ public class Server {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     boolean loginCheck = false;
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
@@ -142,7 +138,7 @@ public class Server {
                             out.println(readUsername + " Login Accepted!!");
                             username = readUsername;
                             writers.add(out);
-                            for (PrintWriter printWriter : writers)  {
+                            for (PrintWriter printWriter : writers) {
                                 printWriter.println(readUsername + " has joined");
                             }
                             //names
@@ -154,10 +150,9 @@ public class Server {
                                 }
                             }
 
-                            System.out.println("Client: "+socket +" logged in with username " +readUsername);
-
-                        }
-                        else
+                            System.out.println("Client: " + socket + " logged in with username " + readUsername);
+                            break;
+                        } else
                             out.println("Login failed. Please try again.");
                     }
                 }
@@ -165,16 +160,15 @@ public class Server {
             } catch (
                     CsvValidationException e) {
                 e.printStackTrace();
-            }finally {
+            }/*finally {
                 try {
-                    socket.close();
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-        }
+        }*/
 
+        }
     }
 }
 
