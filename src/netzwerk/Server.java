@@ -142,7 +142,7 @@ public class Server {
                             out.println(readUsername + " Login Accepted!!");
                             username = readUsername;
                             writers.add(out);
-                            for (PrintWriter printWriter : writers) {
+                            for (PrintWriter printWriter : writers)  {
                                 printWriter.println(readUsername + " has joined");
                             }
                             //names
