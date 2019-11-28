@@ -39,12 +39,15 @@ public class Client {
                 login = in.readLine();
                 if (login.equals("true")) {
                     System.out.println(in.readLine());
+                    System.out.println(in.readLine());
                     break;
                 }
             }
-            while (userIn.readLine() != null) {
-                 out.println(userIn.readLine());
-                 System.out.println(in.readLine());
+            boolean exit = false;
+            while (!exit) {
+                String message = userIn.readLine();
+                out.println(message);
+                System.out.println(in.readLine());
             }
 
 

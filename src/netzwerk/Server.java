@@ -77,6 +77,7 @@ public class Server {
                     }
                     for (PrintWriter writer : writers) {
                         writer.println("MESSAGE " + username + ": " + input);
+                        writer.flush();
                     }
                 }
         }
@@ -114,7 +115,6 @@ public class Server {
                                 out.println("-----REGISTRATION SUCCESSFUL----");
                                 username = readUsername;
                                 writer.writeNext(data);
-                                writer.flush();
                                 userExists = true;
                                 //break;
                             }
@@ -141,6 +141,7 @@ public class Server {
                             writers.add(out);
                             for (PrintWriter printWriter : writers) {
                                 printWriter.println(readUsername + " has joined");
+                                printWriter.flush();
                             }
                             //names
                             synchronized (names) {
