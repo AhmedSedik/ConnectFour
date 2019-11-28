@@ -1,4 +1,5 @@
 package netzwerk;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
@@ -7,7 +8,7 @@ public class Client {
 
     public static void main(String[] args) throws Exception {
 
-        try (Socket socket = new Socket("127.0.0.1", 51730);){
+        try (Socket socket = new Socket("127.0.0.1", 51730);) {
             System.out.println("\n" +
                     "\n" +
                     " _       __________    __________  __  _________   __________     ________  ________   _________    __  _________   _____ __________ _    ____________ \n" +
@@ -22,7 +23,7 @@ public class Client {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // send data through the socket to the server, the Client needs to write to the PrintWriter
 
             BufferedReader in = new BufferedReader(
-                                new InputStreamReader(socket.getInputStream()));
+                    new InputStreamReader(socket.getInputStream()));
 
             BufferedReader userIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
 
@@ -30,17 +31,30 @@ public class Client {
             String password;
             String userChoice = userIn.readLine();
             out.println(userChoice);
-            while ((username = userIn.readLine())  != null
+            String login;
+            while ((username = userIn.readLine()) != null
                     && (password = userIn.readLine()) != null) {
                 out.println(username);
                 out.println(password);
-                System.out.println(in.readLine());
+                login = in.readLine();
+                if (login.equals("true")) {
+                    System.out.println(in.readLine());
+                    break;
+                }
+            }
+            while (userIn.readLine() != null) {
+                 out.println(userIn.readLine());
+                 System.out.println(in.readLine());
             }
 
-            }
+
         }
 
+
     }
+}
+
+
 
 
 

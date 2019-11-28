@@ -135,7 +135,8 @@ public class Server {
                             }
                         }
                         if (loginCheck == true) {
-                            out.println(readUsername + " Login Accepted!!");
+                            out.println("true");
+                            out.println(readUsername + " Login Accepted!");
                             username = readUsername;
                             writers.add(out);
                             for (PrintWriter printWriter : writers) {
@@ -146,10 +147,8 @@ public class Server {
                                 if (!readUsername.isBlank() && !names.contains(readUsername)) {
                                     names.add(readUsername);
                                     System.out.println(names);
-
                                 }
                             }
-
                             System.out.println("Client: " + socket + " logged in with username " + readUsername);
                             break;
                         } else
