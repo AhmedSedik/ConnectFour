@@ -24,10 +24,10 @@ public class Client {
         String login;
 
         //Ask User to Register or Login and write choice to output stream
-        System.out.println("1. Register " + "\n" + "2. Login");
+        System.out.println("/register " + "\n" + "/login");
         String userChoice = scn.nextLine();
-        if (userChoice.equals("/login"))
-            System.out.println("Please Enter Username and Password");
+        if (userChoice.equals("/login") || userChoice.equals("/register"))
+            System.out.println("Please Enter  Username and Password");
 
         out.println(userChoice);
 
@@ -42,6 +42,8 @@ public class Client {
                 System.out.println(in.readLine());
                 break;
             }
+            else
+                System.out.println(in.readLine());
         }
 
             // sendMessage thread

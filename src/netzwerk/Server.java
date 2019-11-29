@@ -62,22 +62,30 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         }
 
         public void chat() throws IOException {
             System.out.println(socket + "has joined the chat");
 
-                // Accept messages from this client and broadcast them.
-                while (true) {
-                    String input = in.readLine();
-                    /*if (input.toLowerCase().startsWith("/quit")) {
-                        return;
-                    }*/
-                    for (PrintWriter writer : writers) {
-                        writer.println("MESSAGE " + username + ": " + input);
-                        writer.flush();
-                    }
+            // Accept messages from this client and broadcast them.
+            while (true) {
+                String input = in.readLine();
+                if (input.toLowerCase().startsWith("/quit"))
+                    break;
+
+                for (PrintWriter writer : writers) {
+                    writer.println("MESSAGE " + username + ": " + input);
+                    writer.flush();
                 }
+            }
+            System.out.println(socket + "has left the chat");
+            names.remove(username);
+            for (PrintWriter writer : writers) {
+                writer.println(username + "has left the chat");
+                writer.flush();
+            }
+            writers.remove(out);
         }
 
         public void registerUser() throws IOException {
@@ -102,6 +110,7 @@ public class Server {
                             while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
                                 if (nextRecord[0].equals(readUsername)) {
                                     System.out.println("a client entered an already taken username");
+                                    out.println("false");
                                     out.println("Username Already Taken");
                                     userExists = true;
                                 }
@@ -110,6 +119,7 @@ public class Server {
 
                                 String[] data = {readUsername, readPassword};
                                 System.out.println("----REGISTRATION SUCCESSFUL---");
+                                out.println("true");
                                 out.println("-----REGISTRATION SUCCESSFUL----");
                                 username = readUsername;
                                 writer.writeNext(data);
