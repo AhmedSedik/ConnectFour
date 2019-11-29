@@ -59,6 +59,7 @@ public class Server {
             try {
                 registerUser();
                 chat();
+                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,7 +68,18 @@ public class Server {
 
         public void chat() throws IOException {
             System.out.println(socket + "has joined the chat");
-
+            writers.add(out);
+            for (PrintWriter printWriter : writers) {
+                printWriter.println(username + " has joined");
+                printWriter.flush();
+            }
+            //names
+            synchronized (names) {
+                if (!username.isBlank() && !names.contains(username)) {
+                    names.add(username);
+                    out.println(names);
+                }
+            }
             // Accept messages from this client and broadcast them.
             while (true) {
                 String input = in.readLine();
@@ -111,14 +123,14 @@ public class Server {
                                 if (nextRecord[0].equals(readUsername)) {
                                     System.out.println("a client entered an already taken username");
                                     out.println("false");
-                                    out.println("Username Already Taken");
+                                    out.println("Username Already Taken. \n Please enter Username and Password");
                                     userExists = true;
                                 }
                             }
                             if (userExists == false) {
 
                                 String[] data = {readUsername, readPassword};
-                                System.out.println("----REGISTRATION SUCCESSFUL---");
+                                System.out.println(socket +"Registered New User");
                                 out.println("true");
                                 out.println("-----REGISTRATION SUCCESSFUL----");
                                 username = readUsername;
@@ -146,18 +158,6 @@ public class Server {
                             out.println("true");
                             out.println(readUsername + " Login Accepted!");
                             username = readUsername;
-                            writers.add(out);
-                            for (PrintWriter printWriter : writers) {
-                                printWriter.println(readUsername + " has joined");
-                                printWriter.flush();
-                            }
-                            //names
-                            synchronized (names) {
-                                if (!readUsername.isBlank() && !names.contains(readUsername)) {
-                                    names.add(readUsername);
-                                    System.out.println(names);
-                                }
-                            }
                             System.out.println("Client: " + socket + " logged in with username " + readUsername);
                             break;
                         } else

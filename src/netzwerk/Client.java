@@ -9,7 +9,7 @@ public class Client {
 
     final static int ServerPort = 51730;
 
-    public static void main(String args[]) throws UnknownHostException, IOException {
+    public static void main(String [] args) throws UnknownHostException, IOException {
         Scanner scn = new Scanner(System.in);
         // establish the connection
         Socket s = new Socket("127.0.0.1", ServerPort);
@@ -39,7 +39,6 @@ public class Client {
 
             if (login.equals("true")) {
                 System.out.println(in.readLine());
-                System.out.println(in.readLine());
                 break;
             }
             else
@@ -68,6 +67,8 @@ public class Client {
                         try {
                             // read the message sent to this client
                             String msg = in.readLine();
+                            if(msg==null)
+                                System.exit(1);
                             System.out.println(msg);
                         } catch (IOException e) {
 
