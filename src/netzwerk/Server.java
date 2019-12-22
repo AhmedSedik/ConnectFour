@@ -73,7 +73,7 @@ public class Server {
                 printWriter.println(username + " has joined");
                 printWriter.flush();
             }
-            //names
+
             synchronized (names) {
                 if (!username.isBlank() && !names.contains(username)) {
                     names.add(username);
@@ -85,6 +85,9 @@ public class Server {
                 String input = in.readLine();
                 if (input.toLowerCase().startsWith("/quit"))
                     break;
+                if(input.equals("")){
+                continue;
+                }
 
                 for (PrintWriter writer : writers) {
                     writer.println("MESSAGE " + username + ": " + input);
