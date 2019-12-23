@@ -2,10 +2,7 @@ package netzwerk;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -38,6 +35,7 @@ public class Client {
             }
         });
     }
+
 
         private int getName() throws IOException {
 
@@ -93,87 +91,13 @@ public class Client {
         out = new PrintWriter(s.getOutputStream(), true);
 
         getName();
-
-        /*String username;
-        String password;
-        String login;
-
-        //Ask User to Register or Login and write choice to output stream
-        System.out.println("/register " + "\n" + "/login");
-        String userChoice = scn.nextLine();
-        if (userChoice.equals("/login") || userChoice.equals("/register"))
-            System.out.println("Please Enter  Username and Password");
-
-        out.println(userChoice);
-
-        while ((username = scn.nextLine()) != null
-                && (password = scn.nextLine()) != null) {
-            out.println(username);
-            out.println(password);
-            login = in.readLine();
-
-            if (login.equals("true")) {
-                System.out.println(in.readLine());
-                break;
-            }
-            else
-                System.out.println(in.readLine());
-        }
-
-            // sendMessage thread
-            Thread sendMessage = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        // read the message to deliver.
-                        String msg = scn.nextLine();
-                        // write on the output stream
-                        out.println(msg);
-                    }
-                }
-            });
-
-            // readMessage thread
-            Thread readMessage = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    while (true) {
-                        try {
-                            // read the message sent to this client
-                            String msg = in.readLine();
-                            if(msg==null)
-                                System.exit(1);
-                            System.out.println(msg);
-                        } catch (IOException e) {
-
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            sendMessage.start();
-            readMessage.start();*/
-
-        }
+    }
 
     public void chat(){
 
         this.frame.setTitle("Chat");
         textField.setEditable(true);
 
-        Thread sendMessage = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    // read the message to deliver.
-                    String msg = textField.getText();
-                    // write on the output stream
-                    out.println(msg);
-                }
-            }
-        });
 
         // readMessage thread
         Thread readMessage = new Thread(new Runnable() {
@@ -194,8 +118,6 @@ public class Client {
                 }
             }
         });
-
-        sendMessage.start();
         readMessage.start();
     }
     public static void main(String[] args) throws Exception {
