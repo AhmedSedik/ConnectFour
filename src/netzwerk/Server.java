@@ -157,13 +157,13 @@ public class Server {
                             }
                         }
                         if (loginCheck == true) {
-                            out.println("true");
+                            out.println("trueLogin");
                             out.println(readUsername + " Login Accepted!");
                             username = readUsername;
                             System.out.println("Client: " + socket + " logged in with username " + readUsername);
                             break;
                         } else
-                            out.println("Login failed. Please try again.");
+                            out.println("falseLogin");
                     }
                 }
 

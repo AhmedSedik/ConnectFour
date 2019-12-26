@@ -48,12 +48,13 @@ public class Client {
                     options,  //the titles of buttons
                     options[0]); //default button title
 
-                if(n==0)
+                if(n==0){
                     out.println("/login");
+                    register();
+                }
                 else {
                     out.println("/register");
                     register();
-
                 }
         return n;
         }
@@ -89,8 +90,17 @@ public class Client {
                 JOptionPane.showMessageDialog(frame, "Username Already Taken. Please enter a new username.");
                 register();
                 break;
+            case "trueLogin":
+                JOptionPane.showMessageDialog(frame, "Login successful!");
+                chat();
+                break;
+            case "falseLogin":
+                JOptionPane.showMessageDialog(frame, "Incorrect Username and/or Password. Please try again.");
+                register();
+                break;
         }
     }
+
     private void run() throws UnknownHostException, IOException {
         Socket s = new Socket("127.0.0.1", ServerPort);
 
@@ -106,7 +116,6 @@ public class Client {
 
         this.frame.setTitle("Chat");
         textField.setEditable(true);
-
 
         // readMessage thread
         Thread readMessage = new Thread(new Runnable() {
