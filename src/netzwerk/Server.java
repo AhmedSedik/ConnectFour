@@ -109,9 +109,10 @@ public class Server {
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
 
             ) {
+
+                String userChoice = in.readLine();
                 String readUsername;
                 String readPassword;
-                String userChoice = in.readLine();
                 if (userChoice.equals("/register")) {
                     boolean userExists = false;
                     while (!userExists) {
@@ -125,8 +126,7 @@ public class Server {
                             while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
                                 if (nextRecord[0].equals(readUsername)) {
                                     System.out.println("a client entered an already taken username");
-                                    out.println("false");
-                                    out.println("Username Already Taken. \n Please enter Username and Password");
+                                    out.println("falseRegister");
                                     userExists = true;
                                 }
                             }
@@ -134,8 +134,8 @@ public class Server {
 
                                 String[] data = {readUsername, readPassword};
                                 System.out.println(socket +"Registered New User");
-                                out.println("true");
-                                out.println("-----REGISTRATION SUCCESSFUL----");
+                                out.println("trueRegister");
+                            //    out.println("-----REGISTRATION SUCCESSFUL----");
                                 username = readUsername;
                                 writer.writeNext(data);
                                 userExists = true;
@@ -147,7 +147,6 @@ public class Server {
                     boolean loginCheck = false;
                     while (((readUsername = in.readLine()) != null) &&
                             ((readPassword = in.readLine()) != null)) {
-                        //System.gc();
                         String[] nextRecord;
                         CSVReader reader = new CSVReader(new FileReader(users));
 

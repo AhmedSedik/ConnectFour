@@ -36,7 +36,6 @@ public class Client {
         });
     }
 
-
         private int getName() throws IOException {
 
             Object[] options = {"Login", "Register"};
@@ -49,39 +48,49 @@ public class Client {
                     options,  //the titles of buttons
                     options[0]); //default button title
 
-            if (n==0) {
-                JPanel panel = new JPanel(new BorderLayout(5, 5));
+                if(n==0)
+                    out.println("/login");
+                else {
+                    out.println("/register");
+                    register();
 
-                JPanel label = new JPanel(new GridLayout(0, 1, 2, 2));
-                label.add(new JLabel("Username", SwingConstants.RIGHT));
-                label.add(new JLabel("Password", SwingConstants.RIGHT));
-                panel.add(label, BorderLayout.WEST);
-
-                JPanel controls = new JPanel(new GridLayout(0, 1, 2, 2));
-                JTextField username = new JTextField();
-                controls.add(username);
-                JPasswordField password = new JPasswordField();
-                controls.add(password);
-                panel.add(controls, BorderLayout.CENTER);
-
-                JOptionPane.showMessageDialog(frame, panel, "login", JOptionPane.OK_CANCEL_OPTION);
-
-                String user = username.getText();
-                String pass = new String(password.getPassword());
-
-                out.println("/login");
-                out.println(user);
-                out.println(pass);
-                if (in.readLine().equals("true")) {
-                    JOptionPane.showMessageDialog(frame, "Login Successful.");
-                    chat();
-
-                } else
-                    JOptionPane.showMessageDialog(frame, "Login failed.");
-            }
+                }
         return n;
         }
 
+    private void register() throws IOException {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+
+        JPanel label = new JPanel(new GridLayout(0, 1, 2, 2));
+        label.add(new JLabel("Username", SwingConstants.RIGHT));
+        label.add(new JLabel("Password", SwingConstants.RIGHT));
+        panel.add(label, BorderLayout.WEST);
+
+        JPanel controls = new JPanel(new GridLayout(0, 1, 2, 2));
+        JTextField username = new JTextField();
+        controls.add(username);
+        JPasswordField password = new JPasswordField();
+        controls.add(password);
+        panel.add(controls, BorderLayout.CENTER);
+
+        JOptionPane.showMessageDialog(frame, panel, "Game Server", JOptionPane.OK_CANCEL_OPTION);
+
+        String user = username.getText();
+        String pass = new String(password.getPassword());
+        out.println(user);
+        out.println(pass);
+        String ServerResponse = in.readLine();
+        switch (ServerResponse) {
+            case "trueRegister":
+                JOptionPane.showMessageDialog(frame, user + " registration successful. ");
+                chat();
+                break;
+            case "falseRegister":
+                JOptionPane.showMessageDialog(frame, "Username Already Taken. Please enter a new username.");
+                register();
+                break;
+        }
+    }
     private void run() throws UnknownHostException, IOException {
         Socket s = new Socket("127.0.0.1", ServerPort);
 
