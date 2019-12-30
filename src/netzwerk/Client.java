@@ -3,8 +3,6 @@ package netzwerk;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -36,30 +34,7 @@ public class Client {
         });
     }
 
-        private int getName() throws IOException {
-
-            Object[] options = {"Login", "Register"};
-            int n = JOptionPane.showOptionDialog(frame,
-                    "Welcome to the game server! Please login or register a new account.",
-                    "Login/Register",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,     //do not use a custom Icon
-                    options,  //the titles of buttons
-                    options[0]); //default button title
-
-                if(n==0){
-                    out.println("/login");
-                    register();
-                }
-                else {
-                    out.println("/register");
-                    register();
-                }
-        return n;
-        }
-
-    private void register() throws IOException {
+    private void registerLogin() throws IOException {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
 
         JPanel label = new JPanel(new GridLayout(0, 1, 2, 2));
@@ -88,7 +63,7 @@ public class Client {
                 break;
             case "falseRegister":
                 JOptionPane.showMessageDialog(frame, "Username Already Taken. Please enter a new username.");
-                register();
+                registerLogin();
                 break;
             case "trueLogin":
                 JOptionPane.showMessageDialog(frame, "Login successful!");
@@ -96,7 +71,7 @@ public class Client {
                 break;
             case "falseLogin":
                 JOptionPane.showMessageDialog(frame, "Incorrect Username and/or Password. Please try again.");
-                register();
+                registerLogin();
                 break;
         }
     }
@@ -108,8 +83,24 @@ public class Client {
         in = new BufferedReader(
                 new InputStreamReader(s.getInputStream()));
         out = new PrintWriter(s.getOutputStream(), true);
+        Object[] options = {"Login", "Register"};
+        int n = JOptionPane.showOptionDialog(frame,
+                "Welcome to the game server! Please login or register a new account.",
+                "Login/Register",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,     //do not use a custom Icon
+                options,  //the titles of buttons
+                options[0]); //default button title
 
-        getName();
+        if(n==0){
+            out.println("/login");
+            registerLogin();
+        }
+        else {
+            out.println("/register");
+            registerLogin();
+        }
     }
 
     public void chat(){
