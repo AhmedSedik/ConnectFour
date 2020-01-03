@@ -11,7 +11,6 @@ import java.util.Scanner;
 public class Client {
 
     final static int ServerPort = 51730;
-    Scanner scn;
     BufferedReader in;
     PrintWriter out;
     JFrame frame = new JFrame("Chat");
@@ -79,7 +78,6 @@ public class Client {
     private void run() throws UnknownHostException, IOException {
         Socket s = new Socket("127.0.0.1", ServerPort);
 
-        scn = new Scanner(System.in);
         in = new BufferedReader(
                 new InputStreamReader(s.getInputStream()));
         out = new PrintWriter(s.getOutputStream(), true);
@@ -117,17 +115,31 @@ public class Client {
                     try {
                         // read the message sent to this client
                         String msg = in.readLine();
-                        if(msg==null)
-                            System.exit(1);
+                        if(msg.equals("bn2afel")){
+                            textField.setBackground(Color.RED);
+                            break;
+                        }
+                        //  System.exit(1);
                         messageArea.append(msg + "\n");
                     } catch (IOException e) {
-
                         e.printStackTrace();
                     }
+                }
+                try {
+                    close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
         readMessage.start();
+    }
+
+    private void close() throws IOException {
+        in.close(); out.close();
+        textField.setEditable(false);
+        JOptionPane.showMessageDialog(frame,"Game Server was Disconnected.");
+
     }
     public static void main(String[] args) throws Exception {
         var client = new Client();

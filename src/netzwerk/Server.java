@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
@@ -38,20 +39,9 @@ public class Server {
     private static DefaultCaret caret;
     private static JPanel inputpanel;
     private static ServerSocket listener = null;
-    public Server() {
-       /* textField.setEditable(true);
-        messageArea.setEditable(false);
-        messageArea.setWrapStyleWord(true);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setOpaque(true);
-        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        frame.setSize(500,500);
-        frame.getContentPane().add(textField, BorderLayout.SOUTH);
-        frame.getContentPane().add(new JScrollPane(messageArea), BorderLayout.CENTER);
-        frame.getContentPane().add(panel);
-        frame.pack();*/
+    private static ExecutorService pool;
 
+    public Server() {
         frame = new JFrame("Server Admin");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -113,7 +103,7 @@ public class Server {
         server.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         server.frame.setVisible(true);
         users = new File("users.csv");
-        ExecutorService pool = Executors.newFixedThreadPool(10);
+        pool = Executors.newFixedThreadPool(10);
         while (true) {
             Thread.sleep(20000);
             pool.execute(new Handler(listener.accept(), out, in));
@@ -148,6 +138,13 @@ public class Server {
 
     private void closeServer() throws IOException {
         listener.close();
+        for (PrintWriter writer : writers) {
+            writer.println("Server was disconnected.");
+            writer.flush();
+        }
+        pool.shutdown(); // Disable new tasks from being submitted
+        pool.shutdownNow();
+
 
     }
     private static class Handler implements Runnable {
@@ -160,7 +157,7 @@ public class Server {
             this.socket = socket;
             this.out = new PrintWriter(socket.getOutputStream(), true);
             this.in = new BufferedReader(
-                          new InputStreamReader(socket.getInputStream()));
+                    new InputStreamReader(socket.getInputStream()));
         }
 
         @Override
@@ -169,17 +166,18 @@ public class Server {
             try {
                 registerUser();
                 chat();
-                socket.close();
+                if(!Thread.currentThread().isInterrupted())
+                leaveChat();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
 
-        public void chat() throws IOException {
-            messageArea.append(username + " " + "has joined the chat"+ "\n");
+        public void chat()  {
+            messageArea.append(username + " " + "has joined the chat" + "\n");
             writers.add(out);
-            concurrentHashMap.put(username,out);
+            concurrentHashMap.put(username, out);
             for (PrintWriter printWriter : writers) {
                 printWriter.println(username + " has joined");
                 printWriter.flush();
@@ -193,31 +191,39 @@ public class Server {
             }
             // Accept messages from this client and broadcast them.
             while (true) {
-                String input = in.readLine();
-                if (input.toLowerCase().startsWith("/quit"))
-                    break;
-                if(input.equals("")){
-                continue;
-                }
+                try {
+                    String input = null;
+                    input = in.readLine();
+                    if (Thread.currentThread().isInterrupted()){
+                        for (PrintWriter writer : writers) {
+                        writer.println("bn2afel");
+                        writer.flush();
+                    }
+                        break;
+                    }
+                    if (input.toLowerCase().startsWith("/quit")) break;
+                    if (input.equals("")) continue;
 
-                for (PrintWriter writer : writers) {
-                    writer.println(username + ": " + input);
-                    writer.flush();
-                    messageArea.append(username + ": " + input + "\n");
+                    for (PrintWriter writer : writers) {
+                        writer.println(username + ": " + input);
+                        writer.flush();
+                        messageArea.append(username + ": " + input + "\n");
+                    }
+                } catch(IOException e) {
+                    e.printStackTrace();
                 }
             }
-            System.out.println(socket + "has left the chat");
+        }
+
+        private void leaveChat(){
             names.remove(username);
+            writers.remove(out);
+            concurrentHashMap.remove(username);
+
             for (PrintWriter writer : writers) {
                 writer.println(username + "has left the chat");
                 writer.flush();
             }
-            /*for(Map.Entry<String, PrintWriter> ya: concurrentHashMap.entrySet()) {
-                Integer value = value1;
-                System.out.println("key: " + key + " value: " + value);
-            }*/
-            writers.remove(out);
-            concurrentHashMap.remove(username);
         }
 
         public void registerUser() throws IOException {
@@ -249,7 +255,6 @@ public class Server {
                             if (userExists == false) {
 
                                 String[] data = {readUsername, readPassword};
-                                System.out.println(socket +"Registered New User");
                                 out.println("trueRegister");
                                 username = readUsername;
                                 writer.writeNext(data);
