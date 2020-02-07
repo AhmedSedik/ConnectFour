@@ -61,6 +61,7 @@ public class ClientGUI extends JFrame implements ActionListener {
     // Constructor connection receiving a socket number
     ClientGUI(String host, int port) {
 
+
         super("Chat Client");
         defaultPort = port;
         defaultHost = host;
@@ -68,12 +69,14 @@ public class ClientGUI extends JFrame implements ActionListener {
 
         // The NorthPanel with:
         JPanel northPanel = new JPanel(new GridLayout(4, 1));
-        // the server name anmd the port number
+        // the server name and the port number
         JPanel serverAndPort = new JPanel(new GridLayout(1, 5, 1, 3));
         // the two JTextField with default value for server address and port number
         tfServer = new JTextField(host);
         tfPort = new JTextField("" + port);
         tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
+
+
 
 
         serverAndPort.add(new JLabel("Server Address:  "));
@@ -141,6 +144,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 
         setSize(600, 600);
         setVisible(true);
+
         usernameField.requestFocus();
 
 

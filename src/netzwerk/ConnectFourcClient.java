@@ -1,5 +1,8 @@
 package netzwerk;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -8,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -147,10 +151,12 @@ public class ConnectFourcClient extends JApplet
         } // not much else I can do
 
     }
-    protected void closeGameWindow() {
+    private void closeGameWindow() {
         Window win = SwingUtilities.getWindowAncestor(p);
         win.dispose();
+
     }
+
     public void run() {
         try {
             // Get notification from the server
@@ -237,34 +243,53 @@ public class ConnectFourcClient extends JApplet
             closeGameWindow();
             disconnect();
             System.out.println("Disconnect");
+            toServer.flush();
         }else
 
         if (status == PLAYER1_WON) {
             // Player 1 won, stop playing
-            continueToPlay = false;
+            //continueToPlay = false;
+
+
             if (myToken == 'r') {
                 jlblStatus.setText("I won!");
+                playSound("src/res/won.wav");
+                showDialog("You have Won!", "Winner");
+
+
             }
             else if (myToken == 'b') {
                 jlblStatus.setText("You lost!");
+                playSound("src/res/lose.wav");
+                showDialog("You have Lost :(", "Loser");
                 receiveMove();
+
             }
         }
         else if (status == PLAYER2_WON) {
             // Player 2 won, stop playing
-            continueToPlay = false;
+            //continueToPlay = false;
+
+
             if (myToken == 'b') {
                 jlblStatus.setText("I won!");
+                playSound("src/res/won.wav");
+                showDialog("You have Won!", "Winner");
+
             }
             else if (myToken == 'r') {
                 jlblStatus.setText("You lost!");
+                playSound("src/res/lose.wav");
+                showDialog("You have Lost :(", "Loser");
                 receiveMove();
+
             }
         }
         else if (status == DRAW) {
             // No winner, game is over
-            continueToPlay = false;
+            //continueToPlay = false;
             jlblStatus.setText("Game is over, no winner!");
+
 
             if (myToken == 'b') {
                 receiveMove();
@@ -276,12 +301,37 @@ public class ConnectFourcClient extends JApplet
             myTurn = true; // It is my turn
         }
     }
-
+    private void showDialog(String message,String title) {
+        int input = JOptionPane.showConfirmDialog(this,
+                message, title, JOptionPane.OK_CANCEL_OPTION);
+        if (input == 0) {
+            try {
+                sendInfoToServer(55);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
     private void receiveMove() throws IOException {
         // Get the other player's move
         int row = fromServer.readInt();
         int column = fromServer.readInt();
         cell[row][column].setToken(otherToken);
+    }
+    public void playSound(String soundName)
+    {
+        try
+        {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile( ));
+            Clip clip = AudioSystem.getClip( );
+            clip.open(audioInputStream);
+            clip.start( );
+        }
+        catch(Exception ex)
+        {
+            System.out.println("Error with playing sound.");
+            ex.printStackTrace( );
+        }
     }
 
     // An inner class for a cell
@@ -332,9 +382,27 @@ public class ConnectFourcClient extends JApplet
             }
         }
 
+
         /** Handle mouse click on a cell */
         private class ClickListener extends MouseAdapter {
+
+            public void playSound(String soundName)
+            {
+                try
+                {
+                    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile( ));
+                    Clip clip = AudioSystem.getClip( );
+                    clip.open(audioInputStream);
+                    clip.start( );
+                }
+                catch(Exception ex)
+                {
+                    System.out.println("Error with playing sound.");
+                    ex.printStackTrace( );
+                }
+            }
             public void mouseClicked(MouseEvent e) {
+                playSound("src/res/sound.wav");
                 int r= -1;
                 for(int x =5; x>= 0; x--){
                     if(cell[x][column].getToken() == ' '){
