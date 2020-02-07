@@ -30,10 +30,10 @@ public class ConnectFourcClient extends JApplet
     private Cell[][] cell =  new Cell[6][7];
 
     // Create and initialize a title label
-    private JLabel jlblTitle = new JLabel();
+    private JLabel label = new JLabel();
 
     // Create and initialize a status labelf
-    private JLabel jlblStatus = new JLabel();
+    private JLabel status = new JLabel();
 
     JPanel p;
     // Indicate selected row and column by the current move
@@ -73,15 +73,15 @@ public class ConnectFourcClient extends JApplet
 
         // Set properties for labels and borders for labels and panel
         p.setBorder(new LineBorder(Color.black, 1));
-        jlblTitle.setHorizontalAlignment(JLabel.CENTER);
-        jlblTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
-        jlblTitle.setBorder(new LineBorder(Color.black, 1));
-        jlblStatus.setBorder(new LineBorder(Color.black, 1));
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setFont(new Font("SansSerif", Font.BOLD, 16));
+        label.setBorder(new LineBorder(Color.black, 1));
+        status.setBorder(new LineBorder(Color.black, 1));
 
         // Place the panel and the labels to the applet
-        add(jlblTitle, BorderLayout.NORTH);
+        add(label, BorderLayout.NORTH);
         add(p, BorderLayout.CENTER);
-        add(jlblStatus, BorderLayout.SOUTH);
+        add(status, BorderLayout.SOUTH);
 
         // Connect to the server
         connectToServer();
@@ -168,14 +168,14 @@ public class ConnectFourcClient extends JApplet
             if (player == PLAYER1) {
                 myToken = 'r';
                 otherToken = 'b';
-                jlblTitle.setText(username +": Your color is red");
-                jlblStatus.setText("Waiting for " + player2 +" to join");
+                label.setText(username +": Your color is red");
+                status.setText("Waiting for " + player2 +" to join");
 
                 // Receive startup notification from the server
                 fromServer.readInt(); // Whatever read is ignored
 
                 // The other player has joined
-                jlblStatus.setText(player2+ " has joined. You start first.");
+                status.setText(player2+ " has joined. You start first.");
 
                 // It is my turn
                 myTurn = true;
@@ -185,8 +185,8 @@ public class ConnectFourcClient extends JApplet
             else if (player == PLAYER2) {
                 myToken = 'b';
                 otherToken = 'r';
-                jlblTitle.setText(username + ": Your color is blue");
-                jlblStatus.setText("Waiting for " + player2 + " to make a move");
+                label.setText(username + ": Your color is blue");
+                status.setText("Waiting for " + player2 + " to make a move");
             } else if (player == 55) {
                 System.out.println("Disconnected");
 
@@ -250,19 +250,22 @@ public class ConnectFourcClient extends JApplet
             // Player 1 won, stop playing
             //continueToPlay = false;
 
-
             if (myToken == 'r') {
-                jlblStatus.setText("I won!");
+
+                this.status.setText("I won!");
                 playSound("src/res/won.wav");
                 showDialog("You have Won!", "Winner");
 
 
+
             }
             else if (myToken == 'b') {
-                jlblStatus.setText("You lost!");
+
+                this.status.setText("You lost!");
                 playSound("src/res/lose.wav");
                 showDialog("You have Lost :(", "Loser");
                 receiveMove();
+
 
             }
         }
@@ -272,13 +275,15 @@ public class ConnectFourcClient extends JApplet
 
 
             if (myToken == 'b') {
-                jlblStatus.setText("I won!");
+
+                this.status.setText("I won!");
                 playSound("src/res/won.wav");
                 showDialog("You have Won!", "Winner");
 
             }
             else if (myToken == 'r') {
-                jlblStatus.setText("You lost!");
+
+                this.status.setText("You lost!");
                 playSound("src/res/lose.wav");
                 showDialog("You have Lost :(", "Loser");
                 receiveMove();
@@ -288,7 +293,7 @@ public class ConnectFourcClient extends JApplet
         else if (status == DRAW) {
             // No winner, game is over
             //continueToPlay = false;
-            jlblStatus.setText("Game is over, no winner!");
+            this.status.setText("Game is over, no winner!");
 
 
             if (myToken == 'b') {
@@ -297,19 +302,20 @@ public class ConnectFourcClient extends JApplet
         }
         else {
             receiveMove();
-            jlblStatus.setText("Your turn");
+            this.status.setText("Your turn");
             myTurn = true; // It is my turn
         }
     }
     private void showDialog(String message,String title) {
+        try {
+            sendInfoToServer(55);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
         int input = JOptionPane.showConfirmDialog(this,
                 message, title, JOptionPane.OK_CANCEL_OPTION);
         if (input == 0) {
-            try {
-                sendInfoToServer(55);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+
         }
     }
     private void receiveMove() throws IOException {
@@ -317,6 +323,7 @@ public class ConnectFourcClient extends JApplet
         int row = fromServer.readInt();
         int column = fromServer.readInt();
         cell[row][column].setToken(otherToken);
+        toServer.flush();
     }
     public void playSound(String soundName)
     {
@@ -417,7 +424,7 @@ public class ConnectFourcClient extends JApplet
                     myTurn = false;
                     rowSelected = r;
                     columnSelected = column;
-                    jlblStatus.setText("waiting for move....");
+                    status.setText("waiting for move....");
                     waiting = false; // Just completed a successful move
                 }
             }

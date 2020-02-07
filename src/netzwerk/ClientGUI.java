@@ -58,6 +58,7 @@ public class ClientGUI extends JFrame implements ActionListener {
     private DefaultListModel<String> listModel;
     private JButton btn_play;
     private JButton btn_close;
+
     // Constructor connection receiving a socket number
     ClientGUI(String host, int port) {
 
@@ -66,7 +67,12 @@ public class ClientGUI extends JFrame implements ActionListener {
         defaultPort = port;
         defaultHost = host;
 
-
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+            setDefaultLookAndFeelDecorated(true);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         // The NorthPanel with:
         JPanel northPanel = new JPanel(new GridLayout(4, 1));
         // the server name and the port number
@@ -75,8 +81,6 @@ public class ClientGUI extends JFrame implements ActionListener {
         tfServer = new JTextField(host);
         tfPort = new JTextField("" + port);
         tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
-
-
 
 
         serverAndPort.add(new JLabel("Server Address:  "));
@@ -144,6 +148,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 
         setSize(600, 600);
         setVisible(true);
+        setResizable(false);
 
         usernameField.requestFocus();
 
@@ -165,50 +170,47 @@ public class ClientGUI extends JFrame implements ActionListener {
         String[] parts = request.split("-");
         String senderUsername = parts[1];
         int result = JOptionPane.showConfirmDialog(this,
-                "player " + senderUsername + " has sent you a request to play Connect Four.","Game Request", JOptionPane.YES_NO_OPTION);
-        if(result == 0) {
-            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "true"+ "-" + senderUsername, username));
-        }
-        else if(result ==1){
-            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "false" + "-" + senderUsername,username));
+                "player " + senderUsername + " has sent you a request to play Connect Four.", "Game Request", JOptionPane.YES_NO_OPTION);
+        if (result == 0) {
+            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "true" + "-" + senderUsername, username));
+        } else if (result == 1) {
+            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "false" + "-" + senderUsername, username));
         }
     }
 
-    void playResponseAccepted(String response){
+    void playResponseAccepted(String response) {
         String[] parts = response.split("-");
         String senderUsername = parts[1];
         client.sendMessage(new ChatMessage(ChatMessage.PLAY_CONNECT_FOUR, senderUsername, username));
     }
-    void playResponseRejected(String response){
+
+    void playResponseRejected(String response) {
         String[] parts = response.split("-");
         String senderUsername = parts[1];
         client.sendMessage(new ChatMessage(ChatMessage.REJECT_CONNECT_FOUR, senderUsername, username));
-    }
-    void sendUserName(String response) {
-
-        client.sendMessage(new ChatMessage(ChatMessage.CLOSED,response,username));
     }
 
     void requestUserBusy(String response) {
         String[] parts = response.split("-");
         String senderUsername = parts[1];
-        JOptionPane.showMessageDialog(this, "User " + senderUsername +"is Busy");
+        JOptionPane.showMessageDialog(this, "User " + senderUsername + "is Busy");
     }
 
     void requestRejected(String response) {
         String[] parts = response.split("-");
         String senderUsername = parts[1];
-        JOptionPane.showMessageDialog(this, "User " + senderUsername +" reject your request to play Connect Four!");
+        JOptionPane.showMessageDialog(this, "User " + senderUsername + " reject your request to play Connect Four!");
     }
+
     void FailureRequest(String response) {
 
-        JOptionPane.showMessageDialog(this,"You Can't Play with yourself :)!");
+        JOptionPane.showMessageDialog(this, "You Can't Play with yourself :)!");
     }
 
 
     void loginAccepted() {
         JOptionPane.showMessageDialog(this, "Login Accepted");
-        this.setTitle("Chat Client" + " ("+username+")");
+        this.setTitle("Chat Client" + " (" + username + ")");
         chatTextField.requestFocus();
     }
 
@@ -219,18 +221,19 @@ public class ClientGUI extends JFrame implements ActionListener {
         connected = false;
 
     }
+
     void registerSucceed() {
         JOptionPane.showMessageDialog(this, "Registration Successful");
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-        this.setTitle("Chat Client" + " ("+username+")");
+        this.setTitle("Chat Client" + " (" + username + ")");
         chatTextField.requestFocus();
     }
 
-    void registerFailed()
-    {
+    void registerFailed() {
         JOptionPane.showMessageDialog(this, "Username already Taken!");
 
     }
+
     void kicked() {
         JOptionPane.showMessageDialog(this, "Admin has kicked you");
         login.setEnabled(true);
@@ -283,10 +286,10 @@ public class ClientGUI extends JFrame implements ActionListener {
         btn_register.addActionListener(this);
 
         l1.setBounds(100, 30, 400, 30);
-        l2.setBounds(80, 70, 200, 30);
-        l3.setBounds(80, 110, 200, 30);
-        usernameRegister.setBounds(300, 70, 200, 30);
-        passwordFieldRegister.setBounds(300, 110, 200, 30);
+        l2.setBounds(50, 70, 180, 30);
+        l3.setBounds(50, 110, 180, 30);
+        usernameRegister.setBounds(120, 70, 200, 30);
+        passwordFieldRegister.setBounds(120, 110, 200, 30);
         btn_register.setBounds(150, 160, 100, 30);
 
         frame.add(l1);
@@ -295,12 +298,19 @@ public class ClientGUI extends JFrame implements ActionListener {
         frame.add(l3);
         frame.add(passwordFieldRegister);
         frame.add(btn_register);
-
         frame.getRootPane().setDefaultButton(btn_register);
-
-        frame.setSize(600, 400);
+        frame.setResizable(false);
+        frame.setSize(450, 250);
         frame.setLayout(null);
         frame.setVisible(true);
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+            setDefaultLookAndFeelDecorated(true);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+
     }
 
     void initCompClientsList() {
@@ -312,7 +322,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         btn_play.setBounds(200, 150, 80, 30);
         btn_play.addActionListener(this);
         btn_close = new JButton("close");
-        btn_close.setBounds(200,180,80,30);
+        btn_close.setBounds(200, 180, 80, 30);
         btn_close.addActionListener(this);
         listModel = new DefaultListModel<>();
 
@@ -328,13 +338,13 @@ public class ClientGUI extends JFrame implements ActionListener {
         frameOnlineUsers.setLayout(null);
         frameOnlineUsers.setVisible(true);
 
-        client.sendMessage(new ChatMessage(ChatMessage.ONLINE_USERS, "",""));
+        client.sendMessage(new ChatMessage(ChatMessage.ONLINE_USERS, "", ""));
 
         list1.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent event) {
                 if (!event.getValueIsAdjusting()) {
-                    userIndex = list1.getSelectedIndex()+1;
+                    userIndex = list1.getSelectedIndex() + 1;
                     System.out.println(userIndex);
                 }
             }
@@ -354,6 +364,7 @@ public class ClientGUI extends JFrame implements ActionListener {
             }
         });
     }
+
     /*
      * Button or JTextField clicked
      */
@@ -361,7 +372,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         Object choice = event.getSource();
         // if it is the Logout button
         if (choice == logout) {
-            client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "",""));
+            client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
             System.out.println("User logged Out!");
             this.setTitle("Chat Client");
             return;
@@ -373,7 +384,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         }
         if (choice == btn_play) {
             String selectedUser = list1.getSelectedValue();
-              client.sendMessage(new ChatMessage(ChatMessage.PLAY_REQUEST,selectedUser,username));
+            client.sendMessage(new ChatMessage(ChatMessage.PLAY_REQUEST, selectedUser, username));
             frameOnlineUsers.dispose();
             setEnabled(true);
             //TODO Waiting status
@@ -393,7 +404,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         if (connected && !loginFailed) {
             // just have to send the message
 
-            client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, chatTextField.getText(),""));
+            client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, chatTextField.getText(), ""));
             chatTextField.setText("");
             return;
         }
@@ -411,8 +422,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 
     /**
      * This method responsible for interacting with the server in login or register mode
+     *
      * @param jUsername the Textfield of user name (register or login)
-     * @param jPass the Textfield of the password (register or login)
+     * @param jPass     the Textfield of the password (register or login)
      */
     private void loginRegisterServer(JTextField jUsername, JPasswordField jPass) {
         String username = jUsername.getText().trim();
@@ -431,8 +443,7 @@ public class ClientGUI extends JFrame implements ActionListener {
             return;
         }
 
-
-        // empty or invalid port numer, ignore it
+        // empty or invalid port number, ignore it
         String portNumber = tfPort.getText().trim();
         if (portNumber.length() == 0)
             return;

@@ -161,7 +161,6 @@ public class VierGewinnt  extends Spiel implements Protokollierbar {
 
             System.out.println("Please enter column number between 1 and " + board.getColumns());
 
-
             if (!userInput.hasNextInt()) {
                 System.out.println("Wrong, " + currentSpieler.getName() + " please enter a column number between 1 to " + board.getColumns());
                 userInput.next();
@@ -180,7 +179,6 @@ public class VierGewinnt  extends Spiel implements Protokollierbar {
                     continue;
                 }
             }
-
             if (checkGewinner(board)) {
                 System.out.println(currentSpieler.getName() + " HAS WON!!");
                 break;

@@ -89,7 +89,6 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 //        list = new JTextArea(80, 20);
 //        list.setEditable(false);
 
-
         // need to be informed when the user click the close button on the frame
         addWindowListener(this);
         setSize(400, 600);
@@ -103,18 +102,14 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
         chat.append(str);
         chat.setCaretPosition(chat.getText().length() - 1);
     }
-
     void appendEvent(String str) {
         event.append(str);
         event.setCaretPosition(chat.getText().length() - 1);
-
     }
-
     void appendClients(String str) {
         listModel.addElement(str);
 
     }
-
     // start or stop where clicked
     public void actionPerformed(ActionEvent event) {
 
@@ -153,8 +148,6 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
                         server.broadcast("Admin: " + chatTextField.getText());
                         chatTextField.setText("");
                     }
-
-
                 }
             });
         } else if (choice == btn_Clients) {
@@ -172,8 +165,6 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
         if (server.connected) {
 
         }
-
-
     }
 
     void initCompClientsList() {
