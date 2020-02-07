@@ -256,8 +256,6 @@ public class ConnectFourcClient extends JApplet
                 playSound("src/res/won.wav");
                 showDialog("You have Won!", "Winner");
 
-
-
             }
             else if (myToken == 'b') {
 
@@ -272,8 +270,6 @@ public class ConnectFourcClient extends JApplet
         else if (status == PLAYER2_WON) {
             // Player 2 won, stop playing
             //continueToPlay = false;
-
-
             if (myToken == 'b') {
 
                 this.status.setText("I won!");
@@ -315,7 +311,7 @@ public class ConnectFourcClient extends JApplet
         int input = JOptionPane.showConfirmDialog(this,
                 message, title, JOptionPane.OK_CANCEL_OPTION);
         if (input == 0) {
-
+            closeGameWindow();
         }
     }
     private void receiveMove() throws IOException {
@@ -361,12 +357,12 @@ public class ConnectFourcClient extends JApplet
         }
 
         /** Return token */
-        public char getToken() {
+        private char getToken() {
             return token;
         }
 
         /** Set a new token */
-        public void setToken(char c) {
+        private void setToken(char c) {
             token = c;
             repaint();
         }
@@ -379,8 +375,6 @@ public class ConnectFourcClient extends JApplet
                 g.drawOval(9, 9, getWidth() - 20, getHeight() - 20);
                 g.setColor(Color.red);
                 g.fillOval(9 ,9,  getWidth() - 20, getHeight() - 20);
-
-
             }
             else if (token == 'b') {
                 g.drawOval(10, 10, getWidth() - 20, getHeight() - 20);
@@ -405,7 +399,7 @@ public class ConnectFourcClient extends JApplet
                 catch(Exception ex)
                 {
                     System.out.println("Error with playing sound.");
-                    ex.printStackTrace( );
+
                 }
             }
             public void mouseClicked(MouseEvent e) {

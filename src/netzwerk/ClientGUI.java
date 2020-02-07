@@ -273,7 +273,12 @@ public class ClientGUI extends JFrame implements ActionListener {
 
     void initComponentRegister() {
 
-
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+            setDefaultLookAndFeelDecorated(true);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         l1 = new JLabel("Please Enter Username and Password below :");
         l1.setForeground(Color.blue);
         l1.setFont(new Font("Serif", Font.BOLD, 14));
@@ -303,13 +308,6 @@ public class ClientGUI extends JFrame implements ActionListener {
         frame.setSize(450, 250);
         frame.setLayout(null);
         frame.setVisible(true);
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-            setDefaultLookAndFeelDecorated(true);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
 
     }
 
@@ -334,9 +332,10 @@ public class ClientGUI extends JFrame implements ActionListener {
         frameOnlineUsers.add(btn_play);
         frameOnlineUsers.add(btn_close);
         frameOnlineUsers.add(label);
-        frameOnlineUsers.setSize(450, 450);
+        frameOnlineUsers.setSize(300, 340);
         frameOnlineUsers.setLayout(null);
         frameOnlineUsers.setVisible(true);
+        frameOnlineUsers.setResizable(false);
 
         client.sendMessage(new ChatMessage(ChatMessage.ONLINE_USERS, "", ""));
 

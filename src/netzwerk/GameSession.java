@@ -163,7 +163,6 @@ class HandleASession implements Runnable, Constraints {
                 if (checkWin('r')) {
                     toPlayer1.writeInt(PLAYER1_WON);
                     toPlayer2.writeInt(PLAYER1_WON);
-                    gameClients.remove(user1);
                     gameClients.remove(user2);
                     sendMove(toPlayer2, row, column);
 
@@ -195,7 +194,7 @@ class HandleASession implements Runnable, Constraints {
                     sendInfo(toPlayer1, 55);
                     sendInfo(toPlayer1, 55);
                     gameClients.remove(user1);
-                    gameClients.remove(user2);
+
 
                 } else
                     // Check if Player 2 wins
