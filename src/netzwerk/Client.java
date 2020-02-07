@@ -1,174 +1,306 @@
 package netzwerk;
 
-import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
+/**
+ * @author zozzy on 31.12.19
+ */
+/*
+ * The Client that can be run both as a console or a GUI
+ */
 public class Client {
 
-    final static int ServerPort = 51730;
+    private ObjectInputStream sInput;
 
-    public static void main(String [] args) throws UnknownHostException, IOException {
-        Scanner scn = new Scanner(System.in);
-        // establish the connection
-        Socket s = new Socket("127.0.0.1", ServerPort);
+    private ObjectOutputStream sOutput;
 
+    private Socket socket;
 
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(s.getInputStream()));
-        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+    private ClientGUI clientGUI;
 
-        String username;
-        String password;
-        String login;
+    private String server, username, password;
 
-        //Ask User to Register or Login and write choice to output stream
-        System.out.println("/register " + "\n" + "/login");
-        String userChoice = scn.nextLine();
-        if (userChoice.equals("/login") || userChoice.equals("/register"))
-            System.out.println("Please Enter  Username and Password");
+    private int port;
 
-        out.println(userChoice);
+    Client(String server, int port, String username, String password) {
+        this(server, port, username, password, null);
+    }
 
-        while ((username = scn.nextLine()) != null
-                && (password = scn.nextLine()) != null) {
-            out.println(username);
-            out.println(password);
-            login = in.readLine();
+    /*
+     * Constructor call when used from a GUI
+     * in console mode the ClientGUI parameter is null
+     */
+    Client(String server, int port, String username, String password, ClientGUI clientGUI) {
+        this.server = server;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+        // save if we are in GUI mode or not
+        this.clientGUI = clientGUI;
+    }
 
-            if (login.equals("true")) {
-                System.out.println(in.readLine());
-                break;
-            }
-            else
-                System.out.println(in.readLine());
+    /*
+     * To start the dialog
+     */
+    public boolean start() {
+        // try to connect to the server
+        try {
+            socket = new Socket(server, port);
+        }
+        // if it failed not much I can so
+        catch (Exception ec) {
+            clientGUI.connectionFailed();
+            display("Error connecting to server:" + ec);
+            return false;
         }
 
-            // sendMessage thread
-            Thread sendMessage = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        // read the message to deliver.
-                        String msg = scn.nextLine();
-                        // write on the output stream
-                        out.println(msg);
-                    }
-                }
-            });
+        String msg = "Attempting Connecting to:  " + socket.getInetAddress() + ":" + socket.getPort();
+        display(msg);
 
-            // readMessage thread
-            Thread readMessage = new Thread(new Runnable() {
-                @Override
-                public void run() {
+        /* Creating both Data Stream */
+        try {
+            sInput = new ObjectInputStream(socket.getInputStream());
+            sOutput = new ObjectOutputStream(socket.getOutputStream());
+        } catch (IOException eIO) {
+            display("Exception creating new Input/output Streams: " + eIO);
+            return false;
+        }
+        sendChoice(clientGUI.userChoices);
+        // creates the Thread to listen from the server
+        new ListenFromServer().start();
+        // Send our username to the server this is the only message that we
+        // will send as a String. All other messages will be ChatMessage objects
 
-                    while (true) {
-                        try {
-                            // read the message sent to this client
-                            String msg = in.readLine();
-                            if(msg==null)
-                                System.exit(1);
-                            System.out.println(msg);
-                        } catch (IOException e) {
+        try {
+            sOutput.writeObject(username);
+            sOutput.writeObject(password);
+        } catch (IOException eIO) {
+            display("Exception doing login : " + eIO);
+            disconnect();
+            return false;
+        }
 
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
+        // success we inform the caller that it worked
+        return true;
+    }
 
-            sendMessage.start();
-            readMessage.start();
+    /*
+     * To send a message to the console or the GUI
+     */
+    private void display(String msg) {
+        if (clientGUI == null)
+            System.out.println(msg);      // println in console mode
+        else
+            clientGUI.append(msg + "\n");        // append to the ClientGUI JTextArea (or whatever)
+    }
 
+    /*
+     * To send a message to the server
+     */
+    void sendMessage(ChatMessage msg) {
+        try {
+            sOutput.writeObject(msg);
+        } catch (IOException e) {
+            display("Exception writing to server: " + e);
         }
     }
 
-    /*public static void main(String[] args) throws Exception {
+    private void sendChoice(String msg) {
+        try {
+            sOutput.writeObject(msg);
+        } catch (IOException e) {
+            display("Exception writing to server: " + e);
+        }
+    }
 
-        try (Socket socket = new Socket("127.0.0.1", 51730);) {
-            System.out.println("\n" +
-                    "\n" +
-                    " _       __________    __________  __  _________   __________     ________  ________   _________    __  _________   _____ __________ _    ____________ \n" +
-                    "| |     / / ____/ /   / ____/ __ \\/  |/  / ____/  /_  __/ __ \\   /_  __/ / / / ____/  / ____/   |  /  |/  / ____/  / ___// ____/ __ \\ |  / / ____/ __ \\\n" +
-                    "| | /| / / __/ / /   / /   / / / / /|_/ / __/      / / / / / /    / / / /_/ / __/    / / __/ /| | / /|_/ / __/     \\__ \\/ __/ / /_/ / | / / __/ / /_/ /\n" +
-                    "| |/ |/ / /___/ /___/ /___/ /_/ / /  / / /___     / / / /_/ /    / / / __  / /___   / /_/ / ___ |/ /  / / /___    ___/ / /___/ _, _/| |/ / /___/ _, _/ \n" +
-                    "|__/|__/_____/_____/\\____/\\____/_/  /_/_____/    /_/  \\____/    /_/ /_/ /_/_____/   \\____/_/  |_/_/  /_/_____/   /____/_____/_/ |_| |___/_____/_/ |_|  \n" +
-                    "                                                                                                                                                       \n" +
-                    "\n");
-            System.out.println("1. Register " + "\n" + "2. Login");
+    /*
+     * When something goes wrong
+     * Close the Input/Output streams and disconnect not much to do in the catch clause
+     */
+    private void disconnect() {
+        try {
+            if (sInput != null) sInput.close();
+        } catch (Exception e) {
+        } // not much else I can do
+        try {
+            if (sOutput != null) sOutput.close();
+        } catch (Exception e) {
+        } // not much else I can do
+        try {
+            if (socket != null) socket.close();
+        } catch (Exception e) {
+        } // not much else I can do
 
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
-            BufferedReader userIn = new BufferedReader(new InputStreamReader(System.in)); // reading data from user
-            String username; String password;
-            String userChoice = userIn.readLine();
-            out.println(userChoice);
-            String login;
+        // inform the GUI
+        if (clientGUI != null)
+            clientGUI.connectionFailed();
 
-            while ((username = userIn.readLine()) != null
-                    && (password = userIn.readLine()) != null) {
-                out.println(username);
-                out.println(password);
-                login = in.readLine();
-//
-                if (login.equals("true")) {
-                    System.out.println(in.readLine());
-                    System.out.println(in.readLine());
+    }
+
+    public static void main(String[] args) {
+        // default values
+        int portNumber = 1500;
+        String serverAddress = "localhost";
+        String userName = "Anonymous";
+        String password = "";
+
+        // depending of the number of arguments provided we fall through
+        switch (args.length) {
+            // > javac Client username portNumber serverAddr
+            case 3:
+                serverAddress = args[2];
+                // > javac Client username portNumber
+            case 2:
+                try {
+                    portNumber = Integer.parseInt(args[1]);
+                } catch (Exception e) {
+                    System.out.println("Invalid port number.");
+                    System.out.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
+                    return;
+                }
+                // > javac Client username
+            case 1:
+                userName = args[0];
+                // > java Client
+            case 0:
+                break;
+            // invalid number of arguments
+            default:
+                System.out.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
+                return;
+        }
+        // create the Client object
+        Client client = new Client(serverAddress, portNumber, userName, password);
+        // test if we can start the connection to the Server
+        // if it failed nothing we can do
+        if (!client.start())
+            return;
+
+        // wait for messages from user
+        Scanner scan = new Scanner(System.in);
+        // loop forever for message from the user
+        while (true) {
+            System.out.print("> ");
+            // read message from user
+            String msg = scan.nextLine();
+            // logout if message is LOGOUT
+            if (msg.equalsIgnoreCase("LOGOUT")) {
+                client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
+                // break to do the disconnect
+                break;
+            }
+            // message WhoIsIn
+            else if (msg.equalsIgnoreCase("WHOISIN")) {
+                client.sendMessage(new ChatMessage(ChatMessage.ONLINE_USERS, "", ""));
+            } else {                // default to ordinary message
+                client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg, ""));
+            }
+        }
+        // done disconnect
+        client.disconnect();
+    }
+
+    /*
+     * a class that waits for the message from the server and append them to the JTextArea
+     */
+    class ListenFromServer extends Thread {
+
+        public void startGame() {
+            // Create a frame
+            JFrame frame = new JFrame("Connect Four" + " - " + username);
+            // Create an instance of the applet
+            ConnectFourcClient applet = new ConnectFourcClient();
+
+            // Add the applet instance to the frame
+            frame.getContentPane().add(applet, BorderLayout.CENTER);
+
+            // Invoke init() and start()
+            applet.init();
+            applet.start();
+
+            // Display the frame
+            frame.setSize(640, 600);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setVisible(true);
+            frame.setResizable(false);
+        }
+
+        public void run() {
+            while (true) {
+                try {
+                    String msg = (String) sInput.readObject();
+
+                    // if console mode print the message and add back the prompt
+                    if (clientGUI == null) {
+                        System.out.println(msg);
+                        System.out.print("> ");
+                    } else if (msg.equalsIgnoreCase("trueLogin")) {
+                        clientGUI.loginAccepted();
+                        display("Login Accepted!");
+                    } else if (msg.equalsIgnoreCase("falseLogin")) {
+                        clientGUI.loginFailed();
+                        display("Login Failed!");
+                        socket.close();
+
+                    } else if (msg.equalsIgnoreCase("trueRegister")) {
+                        clientGUI.registerSucceed();
+                        display("Registration Successful!");
+                    } else if (msg.equalsIgnoreCase("falseRegister")) {
+                        clientGUI.registerFailed();
+                        display("Registration Failed!");
+                        socket.close();
+                    } else if (msg.equalsIgnoreCase("kicked")) {
+                        clientGUI.kicked();
+                        socket.close();
+                    } else if (msg.equalsIgnoreCase("userlogged")) {
+                        clientGUI.userLoggedIn();
+                        socket.close();
+                    } else if (msg.startsWith("online")) {
+                        clientGUI.appendClients(msg.substring(6));
+
+                    } else if (msg.startsWith("play")) {
+                        clientGUI.playRequest(msg);
+                    } else if (msg.startsWith("userbusy")) {
+
+                        clientGUI.requestUserBusy(msg);
+
+                    } else if (msg.startsWith("true")) {
+                        clientGUI.playResponseAccepted(msg);
+
+                    } else if (msg.startsWith("false")) {
+                        clientGUI.playResponseRejected(msg);
+
+                    } else if (msg.startsWith("connect4")) {
+                        startGame();
+
+                    }else if (msg.startsWith("rejected")) {
+                        clientGUI.requestRejected(msg);
+                    }else if (msg.startsWith("Failure")) {
+                        clientGUI.requestRejected(msg);
+
+                    } else {
+                        clientGUI.append(msg);
+                    }
+                } catch (IOException e) {
+                    //display("false Login or Register");
+                    display("Connection Interrupted \n Cause: server could have closed the Connection\n or couldn't connect to the server \n" + e);
+                    if (clientGUI != null)
+                        clientGUI.connectionFailed();
                     break;
                 }
+                // can't happen with a String object but need the catch anyhow
+                catch (ClassNotFoundException e2) {
+                }
             }
-            while (true) {
-                String message = userIn.readLine();
-                out.println(message);
-                System.out.println(in.readLine());
-            }
-            Thread sendMessage = new Thread(new Runnable()
-            {
-                @Override
-                public void run() {
-                    while (true) {
-
-                        try {
-                            String msg = userIn.readLine();
-                            // write on the output stream
-                            dos.writeUTF(msg);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });     }
-                }
-
-            // readMessage thread
-            Thread readMessage = new Thread(new Runnable());
-            {
-                @Override
-                public void run() {
-
-                    while (true) {
-                        try {
-                            // read the message sent to this client
-                            String msg = dis.readUTF();
-                            System.out.println(msg);
-                        } catch (IOException e) {
-
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            sendMessage.start();
-            readMessage.start();
-
         }
-    }*/
-
-
-
-
-
-
+    }
+}
+//TODO player username has won Dialogue then vote to play again or exit / chat box at the end with text field / menu for exit or so
+//TODO login refactoring and styling
+// Chomp integration

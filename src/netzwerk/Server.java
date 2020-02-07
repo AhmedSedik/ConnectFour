@@ -2,181 +2,556 @@ package netzwerk;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.*;
-import java.net.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
+/**
+ * @author zozzy on 31.12.19
+ */
+/*
+ * The server that can be run both as a console application or a GUI
+ */
 public class Server {
 
-    private static Set<String> names = new HashSet<>();
-    private static Set<PrintWriter> writers = new HashSet<>();
-    private static PrintWriter out; private static BufferedReader in;
+    public int uniqueId;
+
+    private ArrayList<ClientThread> clients;
+
+    private ArrayList<String> onlineUsers;
+
+    private ServerGUI serverGUI;
+
+    private SimpleDateFormat simpleDateFormat;
+
+    private int port;
+
+    private String intiator = "";
+
+    public boolean keepGoing;
+
     public static File users;
 
-    public static void main(String[] args) throws Exception {
+    public boolean connected;
 
-        try (var listener = new ServerSocket(51730)) {
-            System.out.println("The game server is running...");
-            users = new File("users.csv");
-            ExecutorService pool = Executors.newFixedThreadPool(10);
-            while (true) {
-                pool.execute(new Handler(listener.accept(), out,in));
-            }
-        }
+    public ServerSocket gameSessionSocket = new ServerSocket(5555);
 
+    public Server(int port) throws IOException {
+        this(port, null);
     }
 
-    private static class Handler implements Runnable {
-        private Socket socket;
-        private String[] listOfUsers;
-        private HashSet<String> h;
-        private List<String[]> records;
-        private String username;
-        private PrintWriter out;
-        private BufferedReader in;
+    public Server(int port, ServerGUI serverGUI) throws IOException {
 
-        public Handler(Socket socket, PrintWriter out, BufferedReader in) throws IOException {
-            this.socket = socket;
-            this.out = new PrintWriter(socket.getOutputStream(), true);
-            this.in = new BufferedReader(
-                          new InputStreamReader(socket.getInputStream()));
-        }
+        this.serverGUI = serverGUI;
 
-        /*Handler(Socket socket) throws IOException {
-            this.socket = socket;
-        }*/
+        this.port = port;
 
-        @Override
-        public void run() {
-            System.out.println("Connected: " + socket);
-            try {
-                registerUser();
-                chat();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
-        }
+        clients = new ArrayList<ClientThread>();
 
-        public void chat() throws IOException {
-            System.out.println(socket + "has joined the chat");
-            writers.add(out);
-            for (PrintWriter printWriter : writers) {
-                printWriter.println(username + " has joined");
-                printWriter.flush();
-            }
-            //names
-            synchronized (names) {
-                if (!username.isBlank() && !names.contains(username)) {
-                    names.add(username);
-                    out.println(names);
-                }
-            }
-            // Accept messages from this client and broadcast them.
-            while (true) {
-                String input = in.readLine();
-                if (input.toLowerCase().startsWith("/quit"))
+        onlineUsers = new ArrayList<>();
+    }
+
+    public void start() {
+        keepGoing = true;
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+
+            while (keepGoing) {
+
+                display("Server waiting for Clients on port " + port + ".");
+
+                Socket socket = serverSocket.accept();    // accept connection
+
+                if (!keepGoing)
                     break;
 
-                for (PrintWriter writer : writers) {
-                    writer.println("MESSAGE " + username + ": " + input);
-                    writer.flush();
+                ClientThread thread = new ClientThread(socket);
+                clients.add(thread);
+
+                thread.start();
+            }
+            try {
+                serverSocket.close();
+                for (int i = 0; i < clients.size(); ++i) {
+                    ClientThread clientThread = clients.get(i);
+                    try {
+                        clientThread.sInput.close();
+                        clientThread.sOutput.close();
+                        clientThread.socket.close();
+                    } catch (IOException ioE) {
+                    }
                 }
+            } catch (Exception e) {
+                display("Exception closing the server and clients: " + e);
             }
-            System.out.println(socket + "has left the chat");
-            names.remove(username);
-            for (PrintWriter writer : writers) {
-                writer.println(username + "has left the chat");
-                writer.flush();
+        } catch (IOException e) {
+            String msg = simpleDateFormat.format(new Date()) + " Exception on new ServerSocket: " + e + "\n";
+            display(msg);
+        }
+    }
+
+
+    protected void stop() {
+        keepGoing = false;
+        try {
+            new Socket("localhost", port);
+        } catch (Exception e) {
+        }
+    }
+
+    /*
+     * Display an event (not a message) to the console or the GUI
+     */
+    private void display(String msg) {
+        String time = simpleDateFormat.format(new Date()) + " " + msg;
+        if (serverGUI == null)
+            System.out.println(time);
+        else
+            serverGUI.appendEvent(time + "\n");
+    }
+
+    /*
+     *  to broadcast a message to all Clients
+     */
+    public synchronized void broadcast(String message) {
+
+        String time = simpleDateFormat.format(new Date());
+        String fullMessage = time + " " + message + "\n";
+        // display message on console or GUI
+        if (serverGUI == null)
+            System.out.print(fullMessage);
+        else
+            serverGUI.appendRoom(fullMessage);     // append in the room window
+
+        for (int i = clients.size(); --i >= 0; ) {
+            ClientThread clientThread = clients.get(i);
+            // try to write to the Client if it fails remove it from the list
+            if (!clientThread.writeMsg(fullMessage)) {
+                clients.remove(i);
+                display("Disconnected Client " + clientThread.username + " removed from list.");
             }
-            writers.remove(out);
+        }
+    }
+
+    // for a client who logoff using the LOGOUT message
+    synchronized void remove(int id) {
+        // scan the array list until we found the Id
+        for (int i = 0; i < clients.size(); ++i) {
+            ClientThread clientThread = clients.get(i);
+            // found it
+            if (clientThread.id == id) {
+                clients.remove(i);
+                return;
+            }
+        }
+    }
+
+    synchronized void kickClient() {
+
+        for (int i = clients.size(); --i >= 0; ) {
+            ClientThread clientThread = clients.get(i);
+
+            if (clientThread.id == serverGUI.userIndex) {
+                //clients.remove(i);//ArrayList size not correct
+                //TODO fix user ID incrementation Done
+                clientThread.id = --uniqueId;
+                //TODO fix user Index (index is at some point wrong)
+
+                if (serverGUI.userIndex >= 1) {
+                    serverGUI.userIndex = -serverGUI.userIndex;
+                }
+                clientThread.writeMsg("kicked");
+                display("Disconnected Client " + clientThread.username + " removed from list.");
+                onlineUsers.remove(clientThread.username);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        // start server on port 1500 unless a PortNumber is specified
+        int portNumber = 1500;
+
+        switch (args.length) {
+            case 1:
+                try {
+                    portNumber = Integer.parseInt(args[0]);
+                } catch (Exception e) {
+                    System.out.println("Invalid port number.");
+                    System.out.println("Usage is: > java Server [portNumber]");
+                    return;
+                }
+            case 0:
+                break;
+            default:
+                System.out.println("Usage is: > java Server [portNumber]");
+                return;
+
+        }
+        // create a server object and start it
+        Server server = new Server(portNumber);
+        server.start();
+    }
+
+    /**
+     * One instance of this thread will run for each client
+     */
+    class ClientThread extends Thread {
+        // the socket where to listen/talk
+        Socket socket;
+        ObjectInputStream sInput;
+        ObjectOutputStream sOutput;
+        String intiator = "";
+        // my unique id (used in disconnecting)
+        int id;
+        // the Username of the Client
+        String username = "";
+        //instance of the helper Class
+        ChatMessage message;
+        //login status
+        boolean loggedIn;
+        String date;
+
+        // Constructor
+        ClientThread(Socket socket) {
+            users = new File("users.csv");
+            // a unique id
+            id = ++uniqueId;
+            this.socket = socket;
+            /* Creating both Data Stream */
+            System.out.println("Thread trying to create Object Input/Output Streams");
+            try {
+                // create output first
+                sOutput = new ObjectOutputStream(socket.getOutputStream());
+                sInput = new ObjectInputStream(socket.getInputStream());
+                // read the username
+                //TODO check user Choice  Done
+
+
+                String userChoice = (String) sInput.readObject();
+
+                if (userChoice.equalsIgnoreCase("/register")) {
+                    registerUser();
+                } else if (userChoice.equalsIgnoreCase("/Login")) {
+                    userLogin();
+                } else if (userChoice.equalsIgnoreCase("playGame")) {
+                    //PLAY GAME
+                } else {
+                    display("Failed to Login or Register");
+                }
+
+                broadcast(username + " just connected.");
+                display(username + " just connected.");
+                connected = true;
+
+            } catch (IOException | ClassNotFoundException e) {
+                display("Exception creating new Input/output Streams: " + e);
+                connected = false;
+                return;
+            }
+
+            date = new Date().toString() + "\n";
         }
 
-        public void registerUser() throws IOException {
+        // what will run forever
+        public void run() {
+            // to loop until LOGOUT
+            boolean keepGoing = true;
+            while (keepGoing) {
+                // read a String (which is an object)
+                System.out.println(username + "in while");
+
+
+                try {
+
+                    if (!intiator.equals("")) {
+                        findByUsername(intiator).sOutput.flush();
+                        findByUsername(intiator).sOutput.reset();
+                        System.out.println(findByUsername(intiator).socket.isConnected());
+                    }
+                    message = (ChatMessage) sInput.readObject();
+
+
+                } catch (IOException e) {
+                    // in case client quit while server running reading stream
+                    display(username + " Exception reading Streams: " + e);
+                    //user disconnected log him off
+
+
+                    onlineUsers.remove(username);
+                    id--;//TODO Fix
+                    break;
+                } catch (ClassNotFoundException e2) {
+                    break;
+                }
+                // the message part of the ChatMessage
+                String message = this.message.getMessage();
+                ChatMessage chatMessage = new ChatMessage();
+                // Switch on the type of message receive
+                switch (this.message.getType()) {
+                    case ChatMessage.MESSAGE:
+                        if (message.isEmpty()) {
+                            break;
+                        } else
+                            broadcast(username + ": " + message);
+                        break;
+                    case ChatMessage.LOGOUT:
+                        broadcast(username + " disconnected");
+                        display(username + " disconnected");
+                        onlineUsers.remove(username);
+                        keepGoing = false;
+                        break;
+                    case ChatMessage.ONLINE_USERS:
+                        // scan al the users connected
+                        if (clients != null && clients.size() >= 1) {
+                            for (int i = 0; i < clients.size(); i++) {
+                                ClientThread ct = clients.get(i);
+                                writeMsg("online" + ct.username);
+                            }
+                        }
+                        break;
+                    case ChatMessage.PLAY_REQUEST:
+                        String selectedUsername = this.message.getMessage();
+                        String sender = this.message.getSender();
+                        if (sender.equals(selectedUsername)) {
+                            writeMsg("Failure");
+                        } else
+                            writeMsgToUser("playRequest" + "-" + sender, selectedUsername);
+                        break;
+
+                    case ChatMessage.REPSONE_PLAY_REQUEST:
+                        String msg = this.message.getMessage();
+                        String[] msgSplit = msg.split("-");
+                        String response = msgSplit[0];
+                        String userTO = msgSplit[1];
+                        //intiator = intiator + userTO;
+                        String userFROM = this.message.getSender();
+                        writeMsgToUser(response + "-" + userFROM, userTO);
+                        break;
+
+                    case ChatMessage.PLAY_CONNECT_FOUR:
+                        String userTO3 = this.message.getMessage();
+                        String userFROM3 = this.username;
+                        writeMsgToUser("connect4", userTO3);
+                        writeMsgToUser("connect4", userFROM3);
+                        startGame(userTO3, userFROM3);
+                        break;
+
+                    case ChatMessage.REJECT_CONNECT_FOUR:
+                        String user2 = this.message.getMessage();
+                        String user1 = this.message.getSender();
+                        writeMsgToUser("rejected" + "-" + user2, user1);
+                    break;
+
+                }
+            }
+            // remove myself from the arrayList containing the list of the
+            // connected Clients
+            remove(id);
+            close();
+        }
+
+        private void registerUser() {
             try (
-                    // create CSVWriter object filewriter object as parameter
                     CSVWriter writer = new CSVWriter(new FileWriter(users.getAbsoluteFile(), true));
 
             ) {
+
                 String readUsername;
                 String readPassword;
-                String userChoice = in.readLine();
-                if (userChoice.equals("/register")) {
-                    boolean userExists = false;
-                    while (!userExists) {
 
-                        while (((readUsername = in.readLine()) != null) &&
-                                ((readPassword = in.readLine()) != null)) {
+                boolean userExists = false;
+                while (!userExists) {
 
-                            String[] nextRecord;
-                            userExists = false;
-                            CSVReader reader = new CSVReader(new FileReader(users));
-                            while ((((nextRecord = reader.readNext())) != null) && userExists == false) {
-                                if (nextRecord[0].equals(readUsername)) {
-                                    System.out.println("a client entered an already taken username");
-                                    out.println("false");
-                                    out.println("Username Already Taken. \n Please enter Username and Password");
-                                    userExists = true;
-                                }
-                            }
-                            if (userExists == false) {
+                    while (((readUsername = (String) sInput.readObject()) != null) &&
+                            ((readPassword = (String) sInput.readObject()) != null)) {
 
-                                String[] data = {readUsername, readPassword};
-                                System.out.println(socket +"Registered New User");
-                                out.println("true");
-                                out.println("-----REGISTRATION SUCCESSFUL----");
-                                username = readUsername;
-                                writer.writeNext(data);
-                                userExists = true;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    boolean loginCheck = false;
-                    while (((readUsername = in.readLine()) != null) &&
-                            ((readPassword = in.readLine()) != null)) {
-                        //System.gc();
                         String[] nextRecord;
+                        userExists = false;
                         CSVReader reader = new CSVReader(new FileReader(users));
-
-                        while ((((nextRecord = reader.readNext())) != null) && loginCheck == false) {
+                        while ((((nextRecord = reader.readNext())) != null) && !userExists) {
                             if (nextRecord[0].equals(readUsername)) {
-                                if (nextRecord[1].equals(readPassword))
-                                    loginCheck = true;
+                                System.out.println("a client entered an already taken username");
+                                sOutput.writeObject("falseRegister");
+                                userExists = true;
                             }
                         }
-                        if (loginCheck == true) {
-                            out.println("true");
-                            out.println(readUsername + " Login Accepted!");
+                        if (!userExists) {
+
+                            String[] data = {readUsername, readPassword};
+                            System.out.println(socket + "Registered New User");
+                            sOutput.writeObject("trueRegister");
                             username = readUsername;
-                            System.out.println("Client: " + socket + " logged in with username " + readUsername);
+                            writer.writeNext(data);
+                            userExists = true;
                             break;
-                        } else
-                            out.println("Login failed. Please try again.");
+                        }
                     }
                 }
+            } catch (IOException | ClassNotFoundException | CsvValidationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //TODO if user already logged in DONE
+        public void userLogin() throws IOException {
+
+            try {
+
+                String readUsername;
+                String readPassword;
+
+                boolean loginCheck = false;
+                while (((readUsername = (String) sInput.readObject()) != null) &&
+                        ((readPassword = (String) sInput.readObject()) != null)) {
+                    String[] nextRecord;
+                    CSVReader reader = new CSVReader(new FileReader(users));
+
+                    while ((((nextRecord = reader.readNext())) != null) && !loginCheck) {
+                        if (nextRecord[0].equals(readUsername)) {
+                            if (nextRecord[1].equals(readPassword)) {
+                                for (String onlineUser : onlineUsers) {
+                                    username = onlineUser;
+                                    // found it
+                                    if (username.equals(readUsername)) {
+                                        System.out.println("doubled");
+                                        sOutput.writeObject("userlogged");
+                                    }
+                                }
+                                loginCheck = true;
+
+                            }
+                        }
+                    }
+                    if (loginCheck) {
+
+
+                        sOutput.writeObject("trueLogin");
+
+                        //sOutput.writeObject(readUsername + " Login Accepted!");
+                        username = readUsername;
+                        //adding user to ArrayList
+                        onlineUsers.add(username);
+                        serverGUI.userIndex++;
+                        System.out.println("Client: " + socket + " logged in with username " + readUsername);
+                        break;
+                    } else
+                        sOutput.writeObject("falseLogin");
+                }
+
 
             } catch (
-                    CsvValidationException e) {
+                    CsvValidationException | ClassNotFoundException e) {
                 e.printStackTrace();
-            }/*finally {
-                try {
+            }
+        }
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-        }*/
 
+        // try to close everything
+        private void close() {
+            // try to close the connection
+            try {
+                if (sOutput != null) sOutput.close();
+            } catch (Exception e) {
+                //nothing to catch
+            }
+            try {
+                if (sInput != null) sInput.close();
+            } catch (Exception e) {
+            }
+
+            try {
+                if (socket != null) socket.close();
+            } catch (Exception e) {
+            }
+        }
+
+        /*
+         * Write a String to the Client output stream
+         */
+        private boolean writeMsg(String msg) {
+            // if Client is still connected send the message to it
+            if (!socket.isConnected()) {
+                close();
+                return false;
+            }
+            // write the message to the stream
+            try {
+                sOutput.writeObject(msg);
+            }
+            // if an error occurs, do not abort just inform the user
+            catch (IOException e) {
+                display("Error sending message to " + username);
+                display(e.toString());
+            }
+            return true;
+        }
+
+        private boolean writeMsgToUser(String msg, String username) {
+            // if Client is still connected send the message to it
+            if (!socket.isConnected()) {
+                close();
+                return false;
+            }
+            try {
+                ClientThread clientThread = findByUsername(username);
+                ObjectOutputStream out = clientThread.sOutput;
+                out.writeObject(msg);
+                out.flush();
+                //TODO sOutput flush
+            }
+            // if an error occurs, do not abort just inform the user
+            catch (IOException e) {
+                display("Error sending message to " + username);
+                display(e.toString());
+            }
+            return true;
         }
     }
-}
 
+    //TODO better have interface also for Remove and Kick Clients
+    void loggedClients() {
+        if (clients.isEmpty()) {
+            serverGUI.appendEvent("No Current Online Users\n");
+            return;
+        }
+
+        for (int i = 0; i < clients.size(); ++i) {
+            ClientThread ct = clients.get(i);
+            serverGUI.appendEvent((i + 1) + ") " + ct.username + " since " + ct.date);
+        }
+
+
+    }
+
+    public ClientThread findByUsername(String username) {
+        for (ClientThread clientThread : clients) {
+            if (clientThread.username.equals(username))
+                return clientThread;
+        }
+        return null;
+    }
+
+    void onlineUsers() {
+        if (clients != null && clients.size() >= 1) {
+            for (int i = 0; i < clients.size(); i++) {
+                ClientThread clientThread = clients.get(i);
+                serverGUI.appendClients((i + 1) + ")" + clientThread.username);
+
+            }
+        }
+    }
+
+    void startGame(String user1, String user2) {
+        GameSession gameSession = new GameSession(user1, user2, gameSessionSocket);
+
+    }
+}
