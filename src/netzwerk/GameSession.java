@@ -163,7 +163,8 @@ class HandleASession implements Runnable, Constraints {
                 if (checkWin('r')) {
                     toPlayer1.writeInt(PLAYER1_WON);
                     toPlayer2.writeInt(PLAYER1_WON);
-                    toPlayer2.writeInt(55);
+                    gameClients.remove(user1);
+                    gameClients.remove(user2);
                     sendMove(toPlayer2, row, column);
 
                     break; // Break the loop
@@ -202,7 +203,8 @@ class HandleASession implements Runnable, Constraints {
                 if (checkWin('b')) {
                     toPlayer1.writeInt(PLAYER2_WON);
                     toPlayer2.writeInt(PLAYER2_WON);
-                    toPlayer2.writeInt(55);
+                    gameClients.remove(user1);
+                    gameClients.remove(user2);
                     sendMove(toPlayer1, row, column);
                     break;
                 } else {
