@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class ChatMessage implements Serializable {
 
-    public static final int PLAY_REQUEST = 3;
+
     protected static final long serialVersionUID = 1112122200L;
 
     // The different types of message sent by the Client
@@ -21,9 +21,11 @@ public class ChatMessage implements Serializable {
     // LOGOUT to disconnect from the Server
     static final int ONLINE_USERS = 0
             , MESSAGE = 1, LOGOUT = 2
+            , PLAY_REQUEST = 3
             , REPSONE_PLAY_REQUEST = 4
             , PLAY_CONNECT_FOUR = 5
-            ,REJECT_CONNECT_FOUR =6;
+            , REJECT_CONNECT_FOUR = 6
+            , CLOSED = 10;
 
     private int type;
 
@@ -52,11 +54,12 @@ public class ChatMessage implements Serializable {
     int getType() {
         return type;
     }
+
     String getMessage() {
         return message;
     }
 
     void setMessage(String msg) {
-            this.message = msg;
+        this.message = msg;
     }
 }

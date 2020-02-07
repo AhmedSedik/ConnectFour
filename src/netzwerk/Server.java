@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -19,11 +20,13 @@ import java.util.Date;
  */
 public class Server {
 
-    public int uniqueId;
+    private int uniqueId;
 
     private ArrayList<ClientThread> clients;
 
     private ArrayList<String> onlineUsers;
+
+    private ArrayList<String> gameClients;
 
     private ServerGUI serverGUI;
 
@@ -33,15 +36,19 @@ public class Server {
 
     private String intiator = "";
 
-    public boolean keepGoing;
+    private boolean keepGoing;
 
-    public static File users;
+    private static File users;
 
-    public boolean connected;
+    boolean connected;
 
-    public ServerSocket gameSessionSocket = new ServerSocket(5555);
+    boolean isBusy = true;
 
-    public Server(int port) throws IOException {
+    int sessionCounter = 0;
+
+    private ServerSocket gameSessionSocket = new ServerSocket(5555);
+
+    private Server(int port) throws IOException {
         this(port, null);
     }
 
@@ -53,9 +60,11 @@ public class Server {
 
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
-        clients = new ArrayList<ClientThread>();
+        clients = new ArrayList<>();
 
         onlineUsers = new ArrayList<>();
+
+        gameClients = new ArrayList<>();
     }
 
     public void start() {
@@ -87,6 +96,7 @@ public class Server {
                         clientThread.sOutput.close();
                         clientThread.socket.close();
                     } catch (IOException ioE) {
+
                     }
                 }
             } catch (Exception e) {
@@ -267,7 +277,6 @@ public class Server {
             boolean keepGoing = true;
             while (keepGoing) {
                 // read a String (which is an object)
-                System.out.println(username + "in while");
 
 
                 try {
@@ -279,6 +288,8 @@ public class Server {
                     }
                     message = (ChatMessage) sInput.readObject();
 
+
+                    sOutput.flush();
 
                 } catch (IOException e) {
                     // in case client quit while server running reading stream
@@ -294,7 +305,7 @@ public class Server {
                 }
                 // the message part of the ChatMessage
                 String message = this.message.getMessage();
-                ChatMessage chatMessage = new ChatMessage();
+
                 // Switch on the type of message receive
                 switch (this.message.getType()) {
                     case ChatMessage.MESSAGE:
@@ -319,12 +330,39 @@ public class Server {
                         }
                         break;
                     case ChatMessage.PLAY_REQUEST:
+
                         String selectedUsername = this.message.getMessage();
                         String sender = this.message.getSender();
-                        if (sender.equals(selectedUsername)) {
-                            writeMsg("Failure");
-                        } else
-                            writeMsgToUser("playRequest" + "-" + sender, selectedUsername);
+
+
+                        isBusy = false;
+
+                        System.out.println("Clients" + gameClients );
+
+                        for (String gameClient : gameClients) {
+                            if (sender.equals(gameClient) || selectedUsername.equals(gameClient)) {
+
+
+                                writeMsgToUser("userbusy" + "-" + selectedUsername, sender);
+                                System.out.println("user already in Game List");
+                                isBusy = true;
+
+                            } else {
+                                //isBusy=false;
+                            }
+                        }
+
+
+                            if (sender.equals(selectedUsername)) {
+                                writeMsg("Failure");
+                                break;
+                            } else if(!isBusy) {
+                                writeMsgToUser("playRequest" + "-" + sender, selectedUsername);
+
+                            }
+
+
+
                         break;
 
                     case ChatMessage.REPSONE_PLAY_REQUEST:
@@ -338,18 +376,27 @@ public class Server {
                         break;
 
                     case ChatMessage.PLAY_CONNECT_FOUR:
+                        //isBusy = true;
+
                         String userTO3 = this.message.getMessage();
                         String userFROM3 = this.username;
                         writeMsgToUser("connect4", userTO3);
                         writeMsgToUser("connect4", userFROM3);
+
+                       /* gameClients.add(userTO3);
+                        gameClients.add(userFROM3);
+                        System.out.println(gameClients);*/
+
                         startGame(userTO3, userFROM3);
+
+
                         break;
 
                     case ChatMessage.REJECT_CONNECT_FOUR:
                         String user2 = this.message.getMessage();
                         String user1 = this.message.getSender();
                         writeMsgToUser("rejected" + "-" + user2, user1);
-                    break;
+                        break;
 
                 }
             }
@@ -550,8 +597,21 @@ public class Server {
         }
     }
 
-    void startGame(String user1, String user2) {
+    private void startGame(String user1, String user2) {
+            /*onlineUsers.forEach(user ->{
+                if (user.equals(user1) || user.equals(user2)) {
+                    System.out.println("match");
+
+                } else {
+                    GameSession gameSession = new GameSession(user1, user2, gameSessionSocket);
+                }
+            });*/
+
         GameSession gameSession = new GameSession(user1, user2, gameSessionSocket);
+        gameSession.gameClients.add(user1);
+        gameSession.gameClients.add(user2);
+        gameClients = gameSession.gameClients;
+
 
     }
 }

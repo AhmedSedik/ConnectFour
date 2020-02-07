@@ -2,6 +2,8 @@ package netzwerk;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -224,11 +226,20 @@ public class Client {
             applet.init();
             applet.start();
 
+
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    //clientGUI.sendUserName(username);
+                }
+            });
             // Display the frame
             frame.setSize(640, 600);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setVisible(true);
             frame.setResizable(false);
+
+
         }
 
         public void run() {
@@ -263,15 +274,19 @@ public class Client {
                         socket.close();
                     } else if (msg.startsWith("online")) {
                         clientGUI.appendClients(msg.substring(6));
+                        sOutput.flush();
+
 
                     } else if (msg.startsWith("play")) {
                         clientGUI.playRequest(msg);
+                        sOutput.flush();
                     } else if (msg.startsWith("userbusy")) {
 
                         clientGUI.requestUserBusy(msg);
 
                     } else if (msg.startsWith("true")) {
                         clientGUI.playResponseAccepted(msg);
+                        sOutput.flush();
 
                     } else if (msg.startsWith("false")) {
                         clientGUI.playResponseRejected(msg);
@@ -282,7 +297,7 @@ public class Client {
                     }else if (msg.startsWith("rejected")) {
                         clientGUI.requestRejected(msg);
                     }else if (msg.startsWith("Failure")) {
-                        clientGUI.requestRejected(msg);
+                        clientGUI.FailureRequest(msg);
 
                     } else {
                         clientGUI.append(msg);

@@ -180,17 +180,28 @@ public class ClientGUI extends JFrame implements ActionListener {
         String senderUsername = parts[1];
         client.sendMessage(new ChatMessage(ChatMessage.REJECT_CONNECT_FOUR, senderUsername, username));
     }
+    void sendUserName(String response) {
+
+        client.sendMessage(new ChatMessage(ChatMessage.CLOSED,response,username));
+    }
 
     void requestUserBusy(String response) {
         String[] parts = response.split("-");
         String senderUsername = parts[1];
-        JOptionPane.showMessageDialog(this, "User " + senderUsername +"Busy");
+        JOptionPane.showMessageDialog(this, "User " + senderUsername +"is Busy");
     }
 
     void requestRejected(String response) {
+        String[] parts = response.split("-");
+        String senderUsername = parts[1];
+        JOptionPane.showMessageDialog(this, "User " + senderUsername +" reject your request to play Connect Four!");
+    }
+    void FailureRequest(String response) {
 
         JOptionPane.showMessageDialog(this,"You Can't Play with yourself :)!");
     }
+
+
     void loginAccepted() {
         JOptionPane.showMessageDialog(this, "Login Accepted");
         this.setTitle("Chat Client" + " ("+username+")");
