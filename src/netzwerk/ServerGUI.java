@@ -18,7 +18,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
     JTextField chatTextField;
 
     private static final long serialVersionUID = 1L;
-    // the stop and start buttons
+    // the stopServer and startServer buttons
     private JButton stopStart;
     //clients Button
     JButton btn_Clients;
@@ -110,20 +110,20 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
         listModel.addElement(str);
 
     }
-    // start or stop where clicked
+    // startServer or stopServer where clicked
     public void actionPerformed(ActionEvent event) {
 
         Object choice = event.getSource();
         if (choice == stopStart) {
-            // if running we have to stop
+            // if running we have to stopServer
             if (server != null) {
-                server.stop();
+                server.stopServer();
                 server = null;
                 tPortNumber.setEditable(true);
                 stopStart.setText("Start");
                 return;
             }
-            // OK start the server
+            // OK startServer the server
             int port;
             try {
                 port = Integer.parseInt(tPortNumber.getText().trim());
@@ -137,7 +137,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            // and start it as a thread
+            // and startServer it as a thread
             new ServerRunning().start();
             stopStart.setText("Stop");
             tPortNumber.setEditable(false);
@@ -162,7 +162,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
             frameOnlineUsers.dispose();
             setEnabled(true);
         }
-        if (server.connected) {
+            if (server.connected) {
 
         }
     }
@@ -221,7 +221,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 
 
     public static void main(String[] arg) {
-        // start server default port 1500
+        // startServer server default port 1500
         new ServerGUI(1500);
     }
 
@@ -234,7 +234,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
         // if my Server exist
         if (server != null) {
             try {
-                server.stop();            // ask the server to close the connection
+                server.stopServer();            // ask the server to close the connection
             } catch (Exception eClose) {
                 //nothing to catch actually
             }
@@ -269,7 +269,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
      */
     class ServerRunning extends Thread {
         public void run() {
-            server.start();         // should execute until if fails
+            server.startServer();         // should execute until if fails
             // the server failed
             stopStart.setText("Start");
             tPortNumber.setEditable(true);

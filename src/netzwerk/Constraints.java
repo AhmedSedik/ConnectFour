@@ -1,5 +1,7 @@
 package netzwerk;
-
+/**
+ * @author zozzy on 28.01.20
+ */
 public interface Constraints {
     int PLAYER1 = 1; // Indicate player 1
     int PLAYER2 = 2; // Indicate player 2

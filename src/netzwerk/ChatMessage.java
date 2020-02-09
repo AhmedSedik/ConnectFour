@@ -22,16 +22,17 @@ public class ChatMessage implements Serializable {
     static final int ONLINE_USERS = 0
             , MESSAGE = 1, LOGOUT = 2
             , PLAY_REQUEST = 3
-            , REPSONE_PLAY_REQUEST = 4
+            , RESPONSE_PLAY_REQUEST = 4
             , PLAY_CONNECT_FOUR = 5
             , REJECT_CONNECT_FOUR = 6
             , CLOSED = 10;
+
 
     private int type;
 
     private String message;
 
-    public String getSender() {
+    String getSender() {
         return sender;
     }
 
@@ -48,8 +49,6 @@ public class ChatMessage implements Serializable {
         this.sender = sender;
     }
 
-    ChatMessage() {
-    }
 
     int getType() {
         return type;

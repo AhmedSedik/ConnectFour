@@ -163,7 +163,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 
     void appendClients(String str) {
         listModel.addElement(str);
-
     }
 
     void playRequest(String request) {
@@ -172,9 +171,9 @@ public class ClientGUI extends JFrame implements ActionListener {
         int result = JOptionPane.showConfirmDialog(this,
                 "player " + senderUsername + " has sent you a request to play Connect Four.", "Game Request", JOptionPane.YES_NO_OPTION);
         if (result == 0) {
-            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "true" + "-" + senderUsername, username));
+            client.sendMessage(new ChatMessage(ChatMessage.RESPONSE_PLAY_REQUEST, "true" + "-" + senderUsername, username));
         } else if (result == 1) {
-            client.sendMessage(new ChatMessage(ChatMessage.REPSONE_PLAY_REQUEST, "false" + "-" + senderUsername, username));
+            client.sendMessage(new ChatMessage(ChatMessage.RESPONSE_PLAY_REQUEST, "false" + "-" + senderUsername, username));
         }
     }
 
@@ -408,12 +407,12 @@ public class ClientGUI extends JFrame implements ActionListener {
             return;
         }
         if (choice == login) {
-            userChoices = "/Login";
+            userChoices = Const.LOGIN_REQUEST;
             loginRegisterServer(usernameField, passwordField);
         }
 
         if (choice == btn_register) {
-            userChoices = "/register";
+            userChoices = Const.REGISTER_REQUEST;
             loginRegisterServer(usernameRegister, passwordFieldRegister);
         }
 
@@ -456,7 +455,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         // try creating a new Client with GUI
         client = new Client(server, port, username, password, this);
 
-        // test if we can start the Client (open socket)
+        // test if we can startServer the Client (open socket)
         if (!client.start()) {
             return;
         }
@@ -484,7 +483,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         chatTextField.addActionListener(this);
     }
 
-    // to start the whole thing the server
+    // to startServer the whole thing the server
     public static void main(String[] args) {
         new ClientGUI("localhost", 1500);
 

@@ -9,7 +9,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -44,8 +43,6 @@ public class Server {
 
     boolean isBusy = true;
 
-    int sessionCounter = 0;
-
     private ServerSocket gameSessionSocket = new ServerSocket(5555);
 
     private Server(int port) throws IOException {
@@ -67,7 +64,7 @@ public class Server {
         gameClients = new ArrayList<>();
     }
 
-    public void start() {
+    public void startServer() {
         keepGoing = true;
 
         try {
@@ -89,8 +86,7 @@ public class Server {
             }
             try {
                 serverSocket.close();
-                for (int i = 0; i < clients.size(); ++i) {
-                    ClientThread clientThread = clients.get(i);
+                for (ClientThread clientThread : clients) {
                     try {
                         clientThread.sInput.close();
                         clientThread.sOutput.close();
@@ -109,11 +105,12 @@ public class Server {
     }
 
 
-    protected void stop() {
+    protected void stopServer() {
         keepGoing = false;
         try {
             new Socket("localhost", port);
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -178,7 +175,7 @@ public class Server {
                 if (serverGUI.userIndex >= 1) {
                     serverGUI.userIndex = -serverGUI.userIndex;
                 }
-                clientThread.writeMsg("kicked");
+                clientThread.writeMsg(Const.USER_KICKED);
                 display("Disconnected Client " + clientThread.username + " removed from list.");
                 onlineUsers.remove(clientThread.username);
             }
@@ -187,7 +184,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        // start server on port 1500 unless a PortNumber is specified
+        // startServer server on port 1500 unless a PortNumber is specified
         int portNumber = 1500;
 
         switch (args.length) {
@@ -206,9 +203,9 @@ public class Server {
                 return;
 
         }
-        // create a server object and start it
+        // create a server object and startServer it
         Server server = new Server(portNumber);
-        server.start();
+        server.startServer();
     }
 
     /**
@@ -226,8 +223,7 @@ public class Server {
         String username = "";
         //instance of the helper Class
         ChatMessage message;
-        //login status
-        boolean loggedIn;
+
         String date;
 
         // Constructor
@@ -245,12 +241,11 @@ public class Server {
                 // read the username
                 //TODO check user Choice  Done
 
-
                 String userChoice = (String) sInput.readObject();
 
-                if (userChoice.equalsIgnoreCase("/register")) {
+                if (userChoice.equalsIgnoreCase(Const.REGISTER_REQUEST)) {
                     registerUser();
-                } else if (userChoice.equalsIgnoreCase("/Login")) {
+                } else if (userChoice.equalsIgnoreCase(Const.LOGIN_REQUEST)) {
                     userLogin();
                 } else if (userChoice.equalsIgnoreCase("playGame")) {
                     //PLAY GAME
@@ -278,7 +273,6 @@ public class Server {
             while (keepGoing) {
                 // read a String (which is an object)
 
-
                 try {
 
                     if (!intiator.equals("")) {
@@ -288,15 +282,12 @@ public class Server {
                     }
                     message = (ChatMessage) sInput.readObject();
 
-
                     sOutput.flush();
 
                 } catch (IOException e) {
                     // in case client quit while server running reading stream
                     display(username + " Exception reading Streams: " + e);
                     //user disconnected log him off
-
-
                     onlineUsers.remove(username);
                     id--;//TODO Fix
                     break;
@@ -323,9 +314,8 @@ public class Server {
                     case ChatMessage.ONLINE_USERS:
                         // scan al the users connected
                         if (clients != null && clients.size() >= 1) {
-                            for (int i = 0; i < clients.size(); i++) {
-                                ClientThread ct = clients.get(i);
-                                writeMsg("online" + ct.username);
+                            for (ClientThread ct : clients) {
+                                writeMsg(Const.ONLINE_USERS_REQUEST + ct.username);
                             }
                         }
                         break;
@@ -333,8 +323,6 @@ public class Server {
 
                         String selectedUsername = this.message.getMessage();
                         String sender = this.message.getSender();
-
-
                         isBusy = false;
 
                         System.out.println("Clients" + gameClients );
@@ -342,8 +330,7 @@ public class Server {
                         for (String gameClient : gameClients) {
                             if (sender.equals(gameClient) || selectedUsername.equals(gameClient)) {
 
-
-                                writeMsgToUser("userbusy" + "-" + selectedUsername, sender);
+                                writeMsgToUser(Const.USER_BUSY + "-" + selectedUsername, sender);
                                 System.out.println("user already in Game List");
                                 isBusy = true;
 
@@ -351,21 +338,16 @@ public class Server {
                                 //isBusy=false;
                             }
                         }
-
-
                             if (sender.equals(selectedUsername)) {
-                                writeMsg("Failure");
+                                writeMsg(Const.REQUEST_FAILURE);
                                 break;
                             } else if(!isBusy) {
                                 writeMsgToUser("playRequest" + "-" + sender, selectedUsername);
 
                             }
-
-
-
                         break;
 
-                    case ChatMessage.REPSONE_PLAY_REQUEST:
+                    case ChatMessage.RESPONSE_PLAY_REQUEST:
                         String msg = this.message.getMessage();
                         String[] msgSplit = msg.split("-");
                         String response = msgSplit[0];
@@ -380,22 +362,20 @@ public class Server {
 
                         String userTO3 = this.message.getMessage();
                         String userFROM3 = this.username;
-                        writeMsgToUser("connect4", userTO3);
-                        writeMsgToUser("connect4", userFROM3);
+                        writeMsgToUser(Const.START_GAME, userTO3);
+                        writeMsgToUser(Const.START_GAME, userFROM3);
 
                        /* gameClients.add(userTO3);
                         gameClients.add(userFROM3);
                         System.out.println(gameClients);*/
 
                         startGame(userTO3, userFROM3);
-
-
                         break;
 
                     case ChatMessage.REJECT_CONNECT_FOUR:
                         String user2 = this.message.getMessage();
                         String user1 = this.message.getSender();
-                        writeMsgToUser("rejected" + "-" + user2, user1);
+                        writeMsgToUser(Const.REQUEST_PLAY_REJECTED + "-" + user2, user1);
                         break;
 
                 }
@@ -427,7 +407,7 @@ public class Server {
                         while ((((nextRecord = reader.readNext())) != null) && !userExists) {
                             if (nextRecord[0].equals(readUsername)) {
                                 System.out.println("a client entered an already taken username");
-                                sOutput.writeObject("falseRegister");
+                                sOutput.writeObject(Const.FALSE_REGISTER);
                                 userExists = true;
                             }
                         }
@@ -435,7 +415,7 @@ public class Server {
 
                             String[] data = {readUsername, readPassword};
                             System.out.println(socket + "Registered New User");
-                            sOutput.writeObject("trueRegister");
+                            sOutput.writeObject(Const.TRUE_REGISTER);
                             username = readUsername;
                             writer.writeNext(data);
                             userExists = true;
@@ -470,18 +450,15 @@ public class Server {
                                     // found it
                                     if (username.equals(readUsername)) {
                                         System.out.println("doubled");
-                                        sOutput.writeObject("userlogged");
+                                        sOutput.writeObject(Const.USER_LOGGED_IN);
                                     }
                                 }
                                 loginCheck = true;
-
                             }
                         }
                     }
                     if (loginCheck) {
-
-
-                        sOutput.writeObject("trueLogin");
+                        sOutput.writeObject(Const.TRUE_LOGIN);
 
                         //sOutput.writeObject(readUsername + " Login Accepted!");
                         username = readUsername;
@@ -491,7 +468,7 @@ public class Server {
                         System.out.println("Client: " + socket + " logged in with username " + readUsername);
                         break;
                     } else
-                        sOutput.writeObject("falseLogin");
+                        sOutput.writeObject(Const.FALSE_lOGIN);
                 }
 
 
@@ -592,26 +569,14 @@ public class Server {
             for (int i = 0; i < clients.size(); i++) {
                 ClientThread clientThread = clients.get(i);
                 serverGUI.appendClients((i + 1) + ")" + clientThread.username);
-
             }
         }
     }
 
     private void startGame(String user1, String user2) {
-            /*onlineUsers.forEach(user ->{
-                if (user.equals(user1) || user.equals(user2)) {
-                    System.out.println("match");
-
-                } else {
-                    GameSession gameSession = new GameSession(user1, user2, gameSessionSocket);
-                }
-            });*/
-
         GameSession gameSession = new GameSession(user1, user2, gameSessionSocket);
         gameSession.gameClients.add(user1);
         gameSession.gameClients.add(user2);
         gameClients = gameSession.gameClients;
-
-
     }
 }

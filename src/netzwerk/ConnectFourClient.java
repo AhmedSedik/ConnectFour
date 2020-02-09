@@ -15,7 +15,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ConnectFourcClient extends JApplet
+import static netzwerk.Const.DISCONNECT_TOKEN;
+/**
+ * @author zozzy on 28.01.20
+ */
+public class ConnectFourClient extends JApplet
         implements Runnable, Constraints {
     // Indicate whether the player has the turn
     private boolean myTurn = false;
@@ -32,7 +36,7 @@ public class ConnectFourcClient extends JApplet
     // Create and initialize a title label
     private JLabel label = new JLabel();
 
-    // Create and initialize a status labelf
+    // Create and initialize a status label
     private JLabel status = new JLabel();
 
     JPanel p;
@@ -100,7 +104,7 @@ public class ConnectFourcClient extends JApplet
         //TODO close game window and disconnect from game server
         eMenuItem.addActionListener(e -> {
             try {
-                sendInfoToServer(55);
+                sendInfoToServer();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -138,17 +142,20 @@ public class ConnectFourcClient extends JApplet
             if (fromServer != null)
                 fromServer.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
         try {
             if (toServer != null)
                 toServer.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
         try {
             if (socket != null)
                 socket.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
 
     }
     private void closeGameWindow() {
@@ -187,7 +194,7 @@ public class ConnectFourcClient extends JApplet
                 otherToken = 'r';
                 label.setText(username + ": Your color is blue");
                 status.setText("Waiting for " + player2 + " to make a move");
-            } else if (player == 55) {
+            } else if (player == DISCONNECT_TOKEN) {
                 System.out.println("Disconnected");
 
             }
@@ -226,9 +233,9 @@ public class ConnectFourcClient extends JApplet
 
     }
 
-    private void sendInfoToServer(int message) throws IOException {
-        toServer.writeInt(message);
-        toServer.writeInt(message);
+    private void sendInfoToServer() throws IOException {
+        toServer.writeInt(DISCONNECT_TOKEN);
+        toServer.writeInt(DISCONNECT_TOKEN);
         toServer.flush();
 
 
@@ -238,7 +245,7 @@ public class ConnectFourcClient extends JApplet
         // Receive game status
         int status = fromServer.readInt();
 
-        if (status == 55) {
+        if (status == DISCONNECT_TOKEN) {
             JOptionPane.showMessageDialog(this, "Connection lost");
             closeGameWindow();
             disconnect();
@@ -247,7 +254,7 @@ public class ConnectFourcClient extends JApplet
         }else
 
         if (status == PLAYER1_WON) {
-            // Player 1 won, stop playing
+            // Player 1 won, stopServer playing
             //continueToPlay = false;
 
             if (myToken == 'r') {
@@ -263,12 +270,10 @@ public class ConnectFourcClient extends JApplet
                 playSound("src/res/lose.wav");
                 showDialog("You have Lost :(", "Loser");
                 receiveMove();
-
-
             }
         }
         else if (status == PLAYER2_WON) {
-            // Player 2 won, stop playing
+            // Player 2 won, stopServer playing
             //continueToPlay = false;
             if (myToken == 'b') {
 
@@ -291,7 +296,6 @@ public class ConnectFourcClient extends JApplet
             //continueToPlay = false;
             this.status.setText("Game is over, no winner!");
 
-
             if (myToken == 'b') {
                 receiveMove();
             }
@@ -304,7 +308,7 @@ public class ConnectFourcClient extends JApplet
     }
     private void showDialog(String message,String title) {
         try {
-            sendInfoToServer(55);
+            sendInfoToServer();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -321,7 +325,7 @@ public class ConnectFourcClient extends JApplet
         cell[row][column].setToken(otherToken);
         toServer.flush();
     }
-    public void playSound(String soundName)
+    private void playSound(String soundName)
     {
         try
         {

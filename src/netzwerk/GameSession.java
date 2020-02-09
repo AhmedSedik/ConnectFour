@@ -4,20 +4,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
+import static netzwerk.Const.DISCONNECT_TOKEN;
+/**
+ * @author zozzy on 28.01.20
+ */
 class GameSession extends JFrame implements Constraints {
 
     String user1, user2;
     ServerSocket gameSessionSocket;
     Socket player1, player2;
-    boolean isConnected = false;
     ArrayList<String> gameClients;
     private ArrayList<HandleASession> clients;
     int sessionNo = 1;
@@ -28,15 +29,8 @@ class GameSession extends JFrame implements Constraints {
         this.gameSessionSocket = gameSessionSocket;
         gameClients = new ArrayList<>();
         clients = new ArrayList<>();
-
-
         listen();
     }
-
-    GameSession() {
-        //Empty Constructor
-    }
-
     private void listen() {
 
         try {
@@ -77,13 +71,10 @@ class GameSession extends JFrame implements Constraints {
             clients.add(task);
             new Thread(task).start();
 
-
-
         } catch (IOException e) {
           e.printStackTrace();
         }
     }
-
 
 // Define the thread class for handling a new session for two players
 class HandleASession implements Runnable, Constraints {
@@ -104,18 +95,13 @@ class HandleASession implements Runnable, Constraints {
     /**
      * Construct a thread
      */
-    public HandleASession(Socket player1, Socket player2) throws IOException {
+    public HandleASession(Socket player1, Socket player2){
         this.player1 = player1;
         this.player2 = player2;
-
 
         // Initialize cells
         for (char[] row : cell)
             Arrays.fill(row, ' ');
-
-    }
-
-    HandleASession() {
 
     }
 
@@ -131,31 +117,27 @@ class HandleASession implements Runnable, Constraints {
             toPlayer2 = new DataOutputStream(player2.getOutputStream());
 
 
-            /**Write anything to notify player 1 to start
-             This is just to let player 1 know to start*/
+            /**Write anything to notify player 1 to startServer
+             This is just to let player 1 know to startServer*/
             toPlayer1.writeInt(1);
 
             /** Continuously serve the players and determine and report
              the game status to the players*/
             while (true) {
-                //TODO fix waiting for disconnect bug
+
 
                 // Receive a move from player 1
                 int row = fromPlayer1.readInt();
                 int column = fromPlayer1.readInt();
                 char token = 'r';
 
+                if ((row == DISCONNECT_TOKEN)) {
+                    sendDisconnectRequest(toPlayer2);
+                    sendDisconnectRequest(toPlayer2);
 
-                if ((row == 55)) {
-
-
-                    sendInfo(toPlayer2, 55);
-                    sendInfo(toPlayer2, 55);
-
-
-                } else if (column == 55) {
-                    sendInfo(toPlayer2, 55);
-                    sendInfo(toPlayer2, 55);
+                } else if (column == DISCONNECT_TOKEN) {
+                    sendDisconnectRequest(toPlayer2);
+                    sendDisconnectRequest(toPlayer2);
 
                 } else
                     cell[row][column] = 'r';
@@ -163,7 +145,8 @@ class HandleASession implements Runnable, Constraints {
                 if (checkWin('r')) {
                     toPlayer1.writeInt(PLAYER1_WON);
                     toPlayer2.writeInt(PLAYER1_WON);
-                    gameClients.remove(user2);
+                    //make sure the 2 players are logged off
+                    closeSession();
                     sendMove(toPlayer2, row, column);
 
                     break; // Break the loop
@@ -184,16 +167,15 @@ class HandleASession implements Runnable, Constraints {
                 row = fromPlayer2.readInt();
                 column = fromPlayer2.readInt();
 
-                if ((row == 55)) {
-                    sendInfo(toPlayer1, 55);
-                    sendInfo(toPlayer1, 55);
-                    gameClients.remove(user1);
-                    gameClients.remove(user2);
+                if ((row == DISCONNECT_TOKEN)) {
+                    sendDisconnectRequest(toPlayer1);
+                    sendDisconnectRequest(toPlayer1);
+                    closeSession();
 
-                } else if (column == 55) {
-                    sendInfo(toPlayer1, 55);
-                    sendInfo(toPlayer1, 55);
-                    gameClients.remove(user1);
+                } else if (column == DISCONNECT_TOKEN) {
+                    sendDisconnectRequest(toPlayer1);
+                    sendDisconnectRequest(toPlayer1);
+                    closeSession();
 
 
                 } else
@@ -202,8 +184,7 @@ class HandleASession implements Runnable, Constraints {
                 if (checkWin('b')) {
                     toPlayer1.writeInt(PLAYER2_WON);
                     toPlayer2.writeInt(PLAYER2_WON);
-                    gameClients.remove(user1);
-                    gameClients.remove(user2);
+                    closeSession();
                     sendMove(toPlayer1, row, column);
                     break;
                 } else {
@@ -217,10 +198,13 @@ class HandleASession implements Runnable, Constraints {
         } catch (IOException ex) {
             System.err.println(ex);
             //make sure array list is empty at end of session
-            gameClients.remove(user1);
-            gameClients.remove(user2);
+            closeSession();
 
         }
+    }
+    void closeSession() {
+        gameClients.remove(user1);
+        gameClients.remove(user2);
     }
 
     /**
@@ -232,10 +216,9 @@ class HandleASession implements Runnable, Constraints {
         out.writeInt(column); // Send column index
     }
 
-    private synchronized void sendInfo(DataOutputStream out, int code)
+    private synchronized void sendDisconnectRequest(DataOutputStream out)
             throws IOException {
-        out.writeInt(code);
-
+        out.writeInt(DISCONNECT_TOKEN);
     }
 
     /**

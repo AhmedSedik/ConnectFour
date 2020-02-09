@@ -48,7 +48,7 @@ public class Client {
     }
 
     /*
-     * To start the dialog
+     * To startServer the dialog
      */
     public boolean start() {
         // try to connect to the server
@@ -78,6 +78,7 @@ public class Client {
         new ListenFromServer().start();
         // Send our username to the server this is the only message that we
         // will send as a String. All other messages will be ChatMessage objects
+
 
         try {
             sOutput.writeObject(username);
@@ -123,28 +124,31 @@ public class Client {
 
     /*
      * When something goes wrong
-     * Close the Input/Output streams and disconnect not much to do in the catch clause
+     * Close the Input/Output streams and disconnect
      */
     private void disconnect() {
         try {
             if (sInput != null) sInput.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
         try {
             if (sOutput != null) sOutput.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
         try {
             if (socket != null) socket.close();
         } catch (Exception e) {
-        } // not much else I can do
+            e.printStackTrace();
+        }
 
         // inform the GUI
         if (clientGUI != null)
             clientGUI.connectionFailed();
 
     }
-
+    //old
     public static void main(String[] args) {
         // default values
         int portNumber = 1500;
@@ -179,7 +183,7 @@ public class Client {
         }
         // create the Client object
         Client client = new Client(serverAddress, portNumber, userName, password);
-        // test if we can start the connection to the Server
+        // test if we can startServer the connection to the Server
         // if it failed nothing we can do
         if (!client.start())
             return;
@@ -217,15 +221,14 @@ public class Client {
             // Create a frame
             JFrame frame = new JFrame("Connect Four" + " - " + username);
             // Create an instance of the applet
-            ConnectFourcClient applet = new ConnectFourcClient();
+            ConnectFourClient applet = new ConnectFourClient();
 
             // Add the applet instance to the frame
             frame.getContentPane().add(applet, BorderLayout.CENTER);
 
-            // Invoke init() and start()
+            // Invoke init() and startServer()
             applet.init();
             applet.start();
-
 
             frame.addWindowListener(new WindowAdapter() {
                 @Override
@@ -238,8 +241,6 @@ public class Client {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setVisible(true);
             frame.setResizable(false);
-
-
         }
 
         public void run() {
@@ -251,52 +252,52 @@ public class Client {
                     if (clientGUI == null) {
                         System.out.println(msg);
                         System.out.print("> ");
-                    } else if (msg.equalsIgnoreCase("trueLogin")) {
+                    } else if (msg.equalsIgnoreCase(Const.TRUE_LOGIN)) {
                         clientGUI.loginAccepted();
                         display("Login Accepted!");
-                    } else if (msg.equalsIgnoreCase("falseLogin")) {
+                    } else if (msg.equalsIgnoreCase(Const.FALSE_lOGIN)) {
                         clientGUI.loginFailed();
                         display("Login Failed!");
                         socket.close();
 
-                    } else if (msg.equalsIgnoreCase("trueRegister")) {
+                    } else if (msg.equalsIgnoreCase(Const.TRUE_REGISTER)) {
                         clientGUI.registerSucceed();
                         display("Registration Successful!");
-                    } else if (msg.equalsIgnoreCase("falseRegister")) {
+                    } else if (msg.equalsIgnoreCase(Const.FALSE_REGISTER)) {
                         clientGUI.registerFailed();
-                        display("Registration Failed!");
+                        display(Const.REG_FAILED);
                         socket.close();
-                    } else if (msg.equalsIgnoreCase("kicked")) {
+                    } else if (msg.equalsIgnoreCase(Const.USER_KICKED)) {
                         clientGUI.kicked();
                         socket.close();
-                    } else if (msg.equalsIgnoreCase("userlogged")) {
+                    } else if (msg.equalsIgnoreCase(Const.USER_LOGGED_IN)) {
                         clientGUI.userLoggedIn();
                         socket.close();
-                    } else if (msg.startsWith("online")) {
+                    } else if (msg.startsWith(Const.ONLINE_USERS_REQUEST)) {
                         clientGUI.appendClients(msg.substring(6));
                         sOutput.flush();
 
 
-                    } else if (msg.startsWith("play")) {
+                    } else if (msg.startsWith(Const.PLAY_C4)) {
                         clientGUI.playRequest(msg);
                         sOutput.flush();
-                    } else if (msg.startsWith("userbusy")) {
+                    } else if (msg.startsWith(Const.USER_BUSY)) {
 
                         clientGUI.requestUserBusy(msg);
 
-                    } else if (msg.startsWith("true")) {
+                    } else if (msg.startsWith(Const.ANSWER_PLAY_YES)) {
                         clientGUI.playResponseAccepted(msg);
                         sOutput.flush();
 
-                    } else if (msg.startsWith("false")) {
+                    } else if (msg.startsWith(Const.ANSWER_PLAY_NO)) {
                         clientGUI.playResponseRejected(msg);
 
-                    } else if (msg.startsWith("connect4")) {
+                    } else if (msg.startsWith(Const.START_GAME)) {
                         startGame();
 
-                    }else if (msg.startsWith("rejected")) {
+                    }else if (msg.startsWith(Const.REQUEST_PLAY_REJECTED)) {
                         clientGUI.requestRejected(msg);
-                    }else if (msg.startsWith("Failure")) {
+                    }else if (msg.startsWith(Const.REQUEST_FAILURE)) {
                         clientGUI.FailureRequest(msg);
 
                     } else {
